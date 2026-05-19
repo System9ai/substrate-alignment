@@ -90,6 +90,17 @@ reportMissingTypeStubs = false
 reportImplicitOverride = "error"
 reportUnnecessaryTypeIgnoreComment = "warning"
 
+# Tests use third-party helpers (notably ``pytest.approx``) whose return types
+# are intentionally loose; relax the "unknown type" diagnostics in tests while
+# keeping the production surface fully strict.
+[[tool.pyright.executionEnvironments]]
+root = "tests"
+reportUnknownMemberType = "none"
+reportUnknownArgumentType = "none"
+reportUnknownVariableType = "none"
+reportUnknownLambdaType = "none"
+reportUnknownParameterType = "none"
+
 # -- pylint -------------------------------------------------------------------
 
 [tool.pylint.main]
