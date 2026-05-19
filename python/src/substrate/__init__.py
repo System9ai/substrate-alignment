@@ -3,19 +3,114 @@
 substrate-alignment is an open standard, reference implementation, and
 machine-checkable conformance suite for primitives used in multi-entity
 agent systems. This package is one conforming implementation; the
-language-neutral specifications live alongside it, in the ``spec/``
+language-neutral specifications live alongside it in the ``spec/``
 directory of the source repository.
 
-Currently a bootstrap stub: the primitive surface (gates, classifiers,
-audit-chain types, drift signals, halt-and-escalate protocol) is being
-ported in subsequent releases. See the project ``CHANGELOG.md`` for
-progress.
+The top-level surface re-exports the vocabulary types and the most
+commonly used primitives. Sub-packages (``substrate.cadence``,
+``substrate.audit``, ``substrate.governor`` …) carry the rest of the
+primitive surface.
 
 Project home: https://github.com/System9ai/substrate-alignment
 """
-
 from __future__ import annotations
 
-__all__ = ["__version__"]
+from substrate.alignment_computer import (
+    DEFAULT_ALIGNMENT_WEIGHTS,
+    DEFAULT_LONG_CYCLE_THRESHOLD,
+    DEFAULT_MIXED_THRESHOLD,
+    AlignmentWeights,
+    auto_classify_mode,
+    compute_alignment_vector,
+    compute_net_potential,
+)
+from substrate.alignment_refresher import (
+    ALIGNMENT_COMPONENTS,
+    AlignmentRefresher,
+)
+from substrate.net_potential_gain_gate import (
+    ACTION_KIND_HEURISTICS,
+    DEFAULT_POSITIVE_THRESHOLD,
+    NPG_VERDICTS,
+    DefaultNetPotentialGainGate,
+    NetPotentialGainEvaluation,
+    NetPotentialGainGate,
+    NetPotentialGainNegative,
+    NetPotentialGainVerdict,
+    RaiseOnNegativeGate,
+)
+from substrate.resistance_band import (
+    DEFAULT_CONFIG,
+    LOWER_BOUND,
+    PHI,
+    PHI_SQUARED,
+    RESISTANCE_BAND_CLASSIFICATIONS,
+    TARGET,
+    UPPER_BOUND,
+    ResistanceBandAssessment,
+    ResistanceBandClassification,
+    ResistanceBandConfig,
+    assess,
+    classify,
+    recommend_scaling_factor,
+)
+from substrate.types import (
+    SUBSTRATE_MODES,
+    AlignmentVector,
+    EntityRef,
+    InMemorySubstrateMetadataStore,
+    SubstrateMetadata,
+    SubstrateMetadataStore,
+    SubstrateMode,
+)
 
 __version__ = "0.1.0.dev0"
+
+__all__ = [
+    # Vocabulary types
+    "SUBSTRATE_MODES",
+    "AlignmentVector",
+    "EntityRef",
+    "SubstrateMetadata",
+    "SubstrateMode",
+    # Storage Protocol + default impl
+    "InMemorySubstrateMetadataStore",
+    "SubstrateMetadataStore",
+    # Alignment computer
+    "AlignmentWeights",
+    "DEFAULT_ALIGNMENT_WEIGHTS",
+    "DEFAULT_LONG_CYCLE_THRESHOLD",
+    "DEFAULT_MIXED_THRESHOLD",
+    "auto_classify_mode",
+    "compute_alignment_vector",
+    "compute_net_potential",
+    # Alignment refresher
+    "ALIGNMENT_COMPONENTS",
+    "AlignmentRefresher",
+    # NPG gate
+    "ACTION_KIND_HEURISTICS",
+    "DEFAULT_POSITIVE_THRESHOLD",
+    "DefaultNetPotentialGainGate",
+    "NPG_VERDICTS",
+    "NetPotentialGainEvaluation",
+    "NetPotentialGainGate",
+    "NetPotentialGainNegative",
+    "NetPotentialGainVerdict",
+    "RaiseOnNegativeGate",
+    # Resistance band
+    "DEFAULT_CONFIG",
+    "LOWER_BOUND",
+    "PHI",
+    "PHI_SQUARED",
+    "RESISTANCE_BAND_CLASSIFICATIONS",
+    "ResistanceBandAssessment",
+    "ResistanceBandClassification",
+    "ResistanceBandConfig",
+    "TARGET",
+    "UPPER_BOUND",
+    "assess",
+    "classify",
+    "recommend_scaling_factor",
+    # Version
+    "__version__",
+]
