@@ -118,6 +118,12 @@ disable = [
   "missing-module-docstring",
   "missing-class-docstring",
   "missing-function-docstring",
+  # Common pytest patterns:
+  "attribute-defined-outside-init",          # ``setup_method`` sets self.* attrs
+  "use-implicit-booleaness-not-comparison",  # explicit ``== ()`` is clearer in tests
+  # Package re-export idiom: ``cadence/__init__.py`` re-exports
+  # ``cadence/cadence_tracker.py`` and lists the same __all__. Intentional.
+  "duplicate-code",
 ]
 
 [tool.pylint.format]
