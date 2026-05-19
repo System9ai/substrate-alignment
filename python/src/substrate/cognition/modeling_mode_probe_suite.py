@@ -1,4 +1,4 @@
-"""modeling mode behavioral probe suite
+"""Modeling mode behavioral probe suite
 
 Pure-logic primitive verifying that an agent operates in
 :attr:`ReasoningMode.MODELING` rather than

@@ -349,7 +349,7 @@ class TestImmutability:
             proposed_outcome={},
         )
         with pytest.raises(Exception):
-            result.score = 0.9  # type: ignore[misc]
+            result.score = 0.9
 
 
 class TestRaiseOnNegative:

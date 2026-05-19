@@ -1,1 +1,1 @@
-"""Substrate-alignment— halt-and-escalate infrastructure."""
+"""Halt-and-escalate infrastructure."""

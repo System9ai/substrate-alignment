@@ -50,11 +50,11 @@ class TestObservationValidation:
         kwargs = {"seq": 0}
         kwargs[field] = value
         with pytest.raises(ValueError, match=match):
-            _obs(**kwargs)  # type: ignore[arg-type]
+            _obs(**kwargs)
 
     def test_self_observation_rejected(self) -> None:
         with pytest.raises(ValueError, match="must differ"):
-            _obs(0, actor_entity_id="alice", peer="alice")
+            _obs(0, actor="alice", peer="alice")
 
 class TestConfig:
     def test_defaults(self) -> None:
@@ -90,7 +90,7 @@ class TestAssessFlow:
 
     def test_other_actors_filtered(self) -> None:
         obs = (
-            _obs(0, actor_entity_id="bob", peer="alice"),
+            _obs(0, actor="bob", peer="alice"),
         )
         out = self.p.assess("alice", obs)
         assert out.verdict is GoldenRuleVerdict.INSUFFICIENT_DATA

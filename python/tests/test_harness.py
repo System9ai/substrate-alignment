@@ -135,7 +135,7 @@ class TestScaffoldingDepthAndPolicy:
     def test_policy_immutable(self) -> None:
         p = ScaffoldingPolicy(depth=ScaffoldingDepth.STANDARD)
         with pytest.raises(AttributeError):
-            p.depth = ScaffoldingDepth.HEAVY  # type: ignore[misc]
+            p.depth = ScaffoldingDepth.HEAVY
 
     def test_policy_for_light_higher_threshold(self) -> None:
         p = policy_for_depth(ScaffoldingDepth.LIGHT)
@@ -379,7 +379,7 @@ class TestToolEnvelope:
             policy=policy_for_depth(ScaffoldingDepth.STANDARD),
         )
         # No interventions seen yet → envelope is UNDER_LOADED.
-        envelope = h._compute_tool_envelope()  # type: ignore[reportPrivateUsage]  # pylint: disable=protected-access
+        envelope = h._compute_tool_envelope()  # pylint: disable=protected-access
         assert isinstance(envelope, ToolEnvelope)
 
     def test_envelope_stressed_after_many_intercepts(self) -> None:

@@ -40,7 +40,6 @@ ALIGNMENT_COMPONENTS: Final[frozenset[str]] = frozenset(
     {"trust", "expertise", "capability", "health"}
 )
 
-
 @final
 class AlignmentRefresher:
     """Coordinator: fold one signal-source component into the merged vector.
@@ -121,7 +120,6 @@ class AlignmentRefresher:
             net_potential=new_net,
             updated_by_entity_id=updated_by_entity_id,
         )
-
 
 __all__ = [
     "ALIGNMENT_COMPONENTS",

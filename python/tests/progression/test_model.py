@@ -90,7 +90,7 @@ class TestConsolidationTier:
     def test_bad(self, field: str, value: object, match: str) -> None:
         kwargs: dict[str, object] = {field: value}
         with pytest.raises(ValueError, match=match):
-            _tier(**kwargs)  # type: ignore[arg-type]
+            _tier(**kwargs)
 
 class TestConsolidationEvent:
     def test_round_trip(self) -> None:
@@ -109,7 +109,7 @@ class TestConsolidationEvent:
     def test_bad(self, field: str, value: object, match: str) -> None:
         kwargs: dict[str, object] = {field: value}
         with pytest.raises(ValueError, match=match):
-            _event(**kwargs)  # type: ignore[arg-type]
+            _event(**kwargs)
 
     def test_to_must_exceed_from(self) -> None:
         with pytest.raises(ValueError, match="to_tier_index"):
@@ -144,7 +144,7 @@ class TestAchievementRef:
     def test_bad(self, field: str, value: object, match: str) -> None:
         kwargs: dict[str, object] = {field: value}
         with pytest.raises(ValueError, match=match):
-            _achievement(**kwargs)  # type: ignore[arg-type]
+            _achievement(**kwargs)
 
 class TestProgression:
     def test_round_trip(self) -> None:
@@ -184,4 +184,4 @@ class TestProgression:
     def test_bad(self, field: str, value: object, match: str) -> None:
         kwargs: dict[str, object] = {field: value}
         with pytest.raises(ValueError, match=match):
-            _progression(**kwargs)  # type: ignore[arg-type]
+            _progression(**kwargs)

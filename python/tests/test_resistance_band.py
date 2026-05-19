@@ -82,7 +82,7 @@ class TestResistanceBandConfigValidation:
 
     def test_default_config_is_frozen(self) -> None:
         with pytest.raises(AttributeError):
-            DEFAULT_CONFIG.lower_bound = 0.5  # type: ignore[misc]
+            DEFAULT_CONFIG.lower_bound = 0.5
 
     def test_negative_lower_bound_rejected(self) -> None:
         with pytest.raises(ValueError):
@@ -235,7 +235,7 @@ class TestAssess:
     def test_assessment_immutable(self) -> None:
         result = assess(TARGET)
         with pytest.raises(AttributeError):
-            result.utilization = 0.99  # type: ignore[misc]
+            result.utilization = 0.99
 
     def test_assessment_carries_target(self) -> None:
         result = assess(0.5)

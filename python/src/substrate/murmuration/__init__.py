@@ -1,1 +1,1 @@
-"""Substrate-alignment— murmuration coordination primitives."""
+"""Murmuration coordination primitives."""

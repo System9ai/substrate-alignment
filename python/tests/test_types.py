@@ -66,7 +66,7 @@ def test_alignment_vector_rejects_out_of_range() -> None:
 def test_alignment_vector_is_frozen() -> None:
     av = AlignmentVector(trust=0.5)
     with pytest.raises(Exception):
-        av.trust = 0.7  # type: ignore[misc]
+        av.trust = 0.7
 
 
 # ── SubstrateMetadata ─────────────────────────────────────────────

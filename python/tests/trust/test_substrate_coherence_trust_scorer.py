@@ -376,7 +376,7 @@ class TestRationaleAndSurface:
         s = _scorer()
         result = s.score(entity_id="agent-1", records=())
         with pytest.raises(dataclasses.FrozenInstanceError):
-            result.verdict = TrustVerdict.TRUSTED  # type: ignore[misc]
+            result.verdict = TrustVerdict.TRUSTED
 
     def test_components_is_frozen(self) -> None:
         s = _scorer()
@@ -385,7 +385,7 @@ class TestRationaleAndSurface:
         )
         assert result.components is not None
         with pytest.raises(dataclasses.FrozenInstanceError):
-            result.components.npg_positive_rate = 0.0  # type: ignore[misc]
+            result.components.npg_positive_rate = 0.0
 
     def test_score_returns_trust_score_type(self) -> None:
         s = _scorer()

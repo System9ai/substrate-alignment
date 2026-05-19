@@ -39,7 +39,7 @@ import hmac
 import json
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Final, Mapping, Optional, Tuple, TypeVar
+from typing import Final, Mapping, Optional, Tuple, TypeVar, cast
 
 from substrate.audit.substrate_trace import (
     GENESIS_PREV_HASH,
@@ -161,14 +161,19 @@ class SubstrateAuditArtifact:
             raise ValueError(f"invalid JSON payload: {exc}") from exc
         if not isinstance(parsed, Mapping):
             raise ValueError("payload root must be a JSON object")
-        manifest_raw = parsed.get("manifest")
-        records_raw = parsed.get("records")
+        parsed_map = cast("Mapping[str, object]", parsed)
+        manifest_raw: object = parsed_map.get("manifest")
+        records_raw: object = parsed_map.get("records")
         if not isinstance(manifest_raw, Mapping):
             raise ValueError("manifest must be a JSON object")
         if not isinstance(records_raw, list):
             raise ValueError("records must be a JSON array")
-        manifest = _deserialize_manifest(manifest_raw)
-        records = tuple(_deserialize_record(r) for r in records_raw)
+        manifest = _deserialize_manifest(cast("Mapping[str, object]", manifest_raw))
+        records_list = cast("list[object]", records_raw)
+        records = tuple(
+            _deserialize_record(cast("Mapping[str, object]", r))
+            for r in records_list
+        )
         return cls(manifest=manifest, records=records)
 
     # ---- exports ----------------------------------------------------
@@ -480,7 +485,8 @@ def _required_enum_tuple(
     value = raw[key]
     if not isinstance(value, list):
         raise TypeError(f"{key} must be a list")
-    return tuple(enum_cls(v) for v in value)
+    items = cast("list[object]", value)
+    return tuple(enum_cls(v) for v in items)
 
 __all__ = [
     "ARTIFACT_FORMAT_VERSION",

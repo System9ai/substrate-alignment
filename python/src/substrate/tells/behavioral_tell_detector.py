@@ -3,7 +3,6 @@
 Pure-logic primitive that aggregates **structured per-observation
 features** into a :class:`TellReport` of detected substrate-state
 tells
-§ "Behavioral tells as potential-loss signals":
 
 * **Hesitation / stalling** — substrate-state internal incoherence.
 * **Nervousness** — autonomic substrate-feedback leakage.

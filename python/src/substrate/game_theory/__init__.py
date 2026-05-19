@@ -1,4 +1,4 @@
-"""Substrate-alignment— game-theoretic primitives.
+"""Game-theoretic primitives.
 
 Pure-logic substrate primitives implementing the game-theoretic spine
 described in.

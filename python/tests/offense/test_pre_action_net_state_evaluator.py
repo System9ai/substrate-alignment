@@ -47,7 +47,7 @@ class TestEntityDelta:
             field: value,
         }
         with pytest.raises(ValueError, match=match):
-            EntityDelta(**kwargs)  # type: ignore[arg-type]
+            EntityDelta(**kwargs)
 
 class TestInputValidation:
     def test_round_trip(self) -> None:
@@ -64,7 +64,7 @@ class TestInputValidation:
 
     def test_empty_actor_rejected(self) -> None:
         with pytest.raises(ValueError, match="actor_entity_id"):
-            _input(actor_entity_id="")
+            _input(actor="")
 
 class TestConfig:
     def test_defaults(self) -> None:

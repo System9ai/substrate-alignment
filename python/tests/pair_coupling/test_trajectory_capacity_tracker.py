@@ -50,7 +50,7 @@ class TestObservationValidation:
             field: value,
         }
         with pytest.raises(ValueError, match=match):
-            _obs(**kwargs)  # type: ignore[arg-type]
+            _obs(**kwargs)
 
     def test_novel_cannot_exceed_generated(self) -> None:
         with pytest.raises(ValueError, match="cannot exceed"):

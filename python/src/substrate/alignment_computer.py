@@ -23,7 +23,6 @@ from typing import Final, Optional
 
 from substrate.types import AlignmentVector, SubstrateMode
 
-
 @dataclass(frozen=True, slots=True)
 class AlignmentWeights:
     """Weights for aggregating :class:`AlignmentVector` into ``net_potential``.
@@ -50,7 +49,6 @@ class AlignmentWeights:
                     f"AlignmentWeights.{name} must be in [0.0, 1.0]; got {v}"
                 )
 
-
 #: Canonical default weights. Callers without per-entity tuning use
 #: these so cross-entity comparisons stay meaningful.
 DEFAULT_ALIGNMENT_WEIGHTS: Final[AlignmentWeights] = AlignmentWeights()
@@ -63,7 +61,6 @@ DEFAULT_LONG_CYCLE_THRESHOLD: Final[float] = 0.70
 #: Net-potential threshold separating ``Mixed`` from ``ShortCycle``.
 #: Below this, the entity is operating reactively / transactionally.
 DEFAULT_MIXED_THRESHOLD: Final[float] = 0.40
-
 
 def compute_alignment_vector(
     *,
@@ -84,7 +81,6 @@ def compute_alignment_vector(
         capability=capability,
         health=health,
     )
-
 
 def compute_net_potential(
     vector: AlignmentVector,
@@ -110,7 +106,6 @@ def compute_net_potential(
     if raw > 1.0:
         return 1.0
     return raw
-
 
 def auto_classify_mode(
     net_potential: float,
@@ -148,7 +143,6 @@ def auto_classify_mode(
     if net_potential > 0.0:
         return SubstrateMode.SHORT_CYCLE
     return SubstrateMode.UNKNOWN
-
 
 __all__ = [
     "DEFAULT_ALIGNMENT_WEIGHTS",

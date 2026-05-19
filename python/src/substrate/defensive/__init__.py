@@ -1,4 +1,4 @@
-"""Substrate-alignment— defensive operation primitives.
+"""Defensive operation primitives.
 
 Substrate-aligned operators must defend against entities trying to
 lower their potential, including against **180° inversion

@@ -60,7 +60,7 @@ class TestInputValidation:
         kwargs = {}
         kwargs[field] = value
         with pytest.raises(ValueError, match=match):
-            _input(**kwargs)  # type: ignore[arg-type]
+            _input(**kwargs)
 
     def test_same_pole_ids_rejected(self) -> None:
         with pytest.raises(ValueError, match="must differ"):

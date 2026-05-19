@@ -56,7 +56,7 @@ class TestObservationValidation:
         kwargs = {"seq": 0}
         kwargs[field] = value
         with pytest.raises(ValueError, match=match):
-            _obs(**kwargs)  # type: ignore[arg-type]
+            _obs(**kwargs)
 
     def test_self_observation_rejected(self) -> None:
         with pytest.raises(ValueError, match="must differ"):

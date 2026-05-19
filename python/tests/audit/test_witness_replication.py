@@ -55,7 +55,7 @@ def _coord(
         verifier=MultiKeyWitnessVerifier(
             peer_keys or {"cell-2": b"peer-key-2"},
         ),
-        transport=transport,  # type: ignore[arg-type]
+        transport=transport,
     )
 
 class TestReplicationOutcome:

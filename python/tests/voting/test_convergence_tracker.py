@@ -375,12 +375,12 @@ def test_trajectory_immutable() -> None:
     rounds = _rounds(winners=["x", "x", "x"], confidences=[0.6, 0.7, 0.8])
     result = t.assess(rounds)
     with pytest.raises(AttributeError):
-        result.verdict = ConvergenceVerdict.OSCILLATING  # type: ignore[misc]
+        result.verdict = ConvergenceVerdict.OSCILLATING
 
 def test_round_result_immutable() -> None:
     r = RoundResult(round_index=0, winner="x", confidence=0.5)
     with pytest.raises(AttributeError):
-        r.winner = "y"  # type: ignore[misc]
+        r.winner = "y"
 
 def test_module_exports() -> None:
     from substrate.voting import (

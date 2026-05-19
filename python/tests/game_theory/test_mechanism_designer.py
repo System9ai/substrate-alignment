@@ -132,7 +132,7 @@ class TestMechanismValidation:
         }
         kwargs[field] = value
         with pytest.raises(ValueError, match=match):
-            Mechanism(**kwargs)  # type: ignore[arg-type]
+            Mechanism(**kwargs)
 
 class TestDesignConstraints:
     def test_defaults(self) -> None:

@@ -500,7 +500,7 @@ class TestModuleSurface:
         v = CrossCellAuditVerifier()
         report = v.verify(artifacts=())
         with pytest.raises(dataclasses.FrozenInstanceError):
-            report.total_artifacts = 99  # type: ignore[misc]
+            report.total_artifacts = 99
 
     def test_severity_enum_values(self) -> None:
         assert CrossCellFindingSeverity.NONE.value == "none"
@@ -516,11 +516,11 @@ class TestModuleSurface:
         for o in report.overlaps:
             assert isinstance(o, CrossCellOverlap)
             with pytest.raises(dataclasses.FrozenInstanceError):
-                o.consistent = True  # type: ignore[misc]
+                o.consistent = True
         for i in report.inconsistencies:
             assert isinstance(i, CrossCellInconsistency)
             with pytest.raises(dataclasses.FrozenInstanceError):
-                i.severity = CrossCellFindingSeverity.LOW  # type: ignore[misc]
+                i.severity = CrossCellFindingSeverity.LOW
 
     def test_cell_artifact_finding_dataclass(self) -> None:
         v = CrossCellAuditVerifier()
@@ -528,7 +528,7 @@ class TestModuleSurface:
         f = report.per_cell[0]
         assert isinstance(f, CellArtifactFinding)
         with pytest.raises(dataclasses.FrozenInstanceError):
-            f.cell_id = "X"  # type: ignore[misc]
+            f.cell_id = "X"
 
     def test_report_dataclass(self) -> None:
         v = CrossCellAuditVerifier()

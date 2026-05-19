@@ -47,7 +47,7 @@ class TestAttackObservation:
         kwargs = {"seq": 0, "peer": "bob"}
         kwargs[field] = value
         with pytest.raises(ValueError, match=match):
-            _obs(**kwargs)  # type: ignore[arg-type]
+            _obs(**kwargs)
 
     def test_severity_range(self) -> None:
         with pytest.raises(ValueError, match="severity"):

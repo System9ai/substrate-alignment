@@ -141,7 +141,7 @@ class OffenseHandlingProtocol:  # pylint: disable=too-few-public-methods
     ) -> None:
         self._config = config
 
-    def handle(
+    def handle(  # pylint: disable=too-many-return-statements
         self, input_: OffenseHandlingInput,
     ) -> OffenseHandlingDecision:
         """Route the offense to a substrate-aligned response."""

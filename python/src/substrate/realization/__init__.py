@@ -1,1 +1,1 @@
-"""Substrate-alignment— realization event tracking."""
+"""Realization event tracking."""

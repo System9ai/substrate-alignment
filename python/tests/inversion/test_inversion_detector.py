@@ -473,7 +473,7 @@ class TestModuleSurface:
         det = HeuristicInversionDetector()
         result = det.detect(output_text="hello")
         with pytest.raises(Exception):  # FrozenInstanceError
-            result.confidence = 0.5  # type: ignore[misc]
+            result.confidence = 0.5
 
     def test_returns_inversion_detection(self) -> None:
         det = HeuristicInversionDetector()
@@ -486,4 +486,4 @@ class TestModuleSurface:
         for fire in result.pairs_fired:
             assert isinstance(fire, InversionPairFire)
             with pytest.raises(Exception):  # FrozenInstanceError
-                fire.name = "x"  # type: ignore[misc]
+                fire.name = "x"

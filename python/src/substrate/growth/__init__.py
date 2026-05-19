@@ -1,4 +1,4 @@
-"""Substrate-alignment— growth-vector + survival-instinct primitives.
+"""Growth-vector + survival-instinct primitives.
 survival-instinct, defensive operation protects the entity's
 growth-vector. The amygdala in human neuroanatomy is the biological
 substrate's amygdala-analog of a general substrate-mechanical

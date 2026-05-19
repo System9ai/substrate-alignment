@@ -46,7 +46,7 @@ class TestPointValidation:
         kwargs = {"seq": 0}
         kwargs[field] = value
         with pytest.raises(ValueError, match=match):
-            _point(**kwargs)  # type: ignore[arg-type]
+            _point(**kwargs)
 
 class TestConfig:
     def test_defaults(self) -> None:

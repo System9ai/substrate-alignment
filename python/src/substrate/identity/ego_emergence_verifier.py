@@ -2,7 +2,6 @@
 
 Pure-logic primitive verifying substrate-aligned **node-scale**
 identity emergence
-§ ego-identity emergence.
 
 the host application hierarchy
 =================

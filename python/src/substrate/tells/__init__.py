@@ -1,5 +1,4 @@
-"""Substrate-alignment— behavioral tell detection.
-§ "Behavioral tells as potential-loss signals" and
+"""Behavioral tell detection.
 direct judgment. The substrate-aligned use is to inform trust-score
 updates and modeling mode interpretation; the substrate-misaligned use
 would be to mark entities as "suspicious" based on tells alone (which

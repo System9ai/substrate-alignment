@@ -365,12 +365,12 @@ def test_assessment_is_frozen() -> None:
     v = IndependenceVerifier()
     result = v.assess({"a": "x", "b": "y"})
     with pytest.raises(AttributeError):
-        result.independence_score = 0.0  # type: ignore[misc]
+        result.independence_score = 0.0
 
 def test_trace_similarity_frozen() -> None:
     ts = TraceSimilarity(voter_a="a", voter_b="b", similarity=0.5)
     with pytest.raises(AttributeError):
-        ts.similarity = 1.0  # type: ignore[misc]
+        ts.similarity = 1.0
 
 def test_empty_trace_strategies_constant_lockstep() -> None:
     for s in EmptyTraceStrategy:

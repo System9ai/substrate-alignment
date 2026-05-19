@@ -1,4 +1,4 @@
-"""Substrate-alignment— multi-scale aggregation primitives.
+"""Multi-scale aggregation primitives.
 condition #3 — **Multi-scale alignment architecture** (cells / nodes
 / orgs, mirroring cells / tissues / organs).
 

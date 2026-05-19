@@ -37,7 +37,7 @@ Public surface
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from time import time as _wall_time
 from typing import (
@@ -47,13 +47,13 @@ from typing import (
     Optional,
     Protocol,
     Sequence,
+    cast,
     final,
 )
 
 from substrate.types import EntityRef, SubstrateMetadataStore
 
 LOG = logging.getLogger(__name__)
-
 
 class NetPotentialGainVerdict(str, Enum):
     """Four-valued verdict from the gate.
@@ -67,7 +67,6 @@ class NetPotentialGainVerdict(str, Enum):
     NET_NEGATIVE = "net_negative"
     INSUFFICIENT_DATA = "insufficient_data"
 
-
 #: All verdict values. Stays in lockstep with the enum so downstream
 #: consumers (audit CHECK constraints, discriminators) import a single
 #: source.
@@ -75,13 +74,11 @@ NPG_VERDICTS: Final[frozenset[str]] = frozenset(
     v.value for v in NetPotentialGainVerdict
 )
 
-
 #: Default entity_type used when callers pass a bare entity-id string and the
 #: gate must coerce it to an :class:`EntityRef`. Existing host applications
 #: that key entities by id-only (without a typed taxonomy) can rely on this
 #: default; richer hosts pass :class:`EntityRef` explicitly.
 _DEFAULT_ENTITY_TYPE: Final[str] = "entity"
-
 
 def _as_ref(value: object) -> EntityRef:
     """Coerce ``value`` to an :class:`EntityRef`.
@@ -97,8 +94,7 @@ def _as_ref(value: object) -> EntityRef:
         f"expected EntityRef or entity-id string; got {type(value).__name__}"
     )
 
-
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, init=False)
 class NetPotentialGainEvaluation:
     """Frozen result of one gate evaluation.
 
@@ -109,10 +105,16 @@ class NetPotentialGainEvaluation:
     audit rows). ``evaluated_at_epoch`` is the wall clock at gate-run
     time — used as the audit timestamp.
 
-    ``actor``, ``affected_entities``, ``per_entity_delta`` and
-    ``missing_metadata_for`` accept entity-id strings on construction and
-    coerce them to :class:`EntityRef` (using the default entity-type) so
-    legacy callers without a typed taxonomy keep working.
+    The constructor accepts two parameter sets:
+
+    - **Typed** — ``actor: EntityRef``, ``affected_entities: Sequence[EntityRef]``
+      (the preferred form).
+    - **Legacy** — ``actor_entity_id: str``, ``affected_entity_ids: Sequence[str]``
+      (coerced to :class:`EntityRef` using the default entity-type so
+      callers without a typed taxonomy keep working).
+
+    String entity-ids passed to either form are coerced to
+    :class:`EntityRef` automatically.
     """
 
     verdict: NetPotentialGainVerdict
@@ -123,23 +125,53 @@ class NetPotentialGainEvaluation:
     per_entity_delta: tuple[tuple[EntityRef, float], ...]
     reasoning: str
     evaluated_at_epoch: float
-    missing_metadata_for: tuple[EntityRef, ...] = field(default_factory=tuple)
+    missing_metadata_for: tuple[EntityRef, ...]
 
-    def __post_init__(self) -> None:
-        # Coerce strings → EntityRef on every field that accepts them.
-        if not isinstance(self.actor, EntityRef):
-            object.__setattr__(self, "actor", _as_ref(self.actor))
-        coerced_affected = tuple(_as_ref(e) for e in self.affected_entities)
-        if coerced_affected != self.affected_entities:
-            object.__setattr__(self, "affected_entities", coerced_affected)
-        coerced_deltas = tuple(
-            (_as_ref(e), float(d)) for e, d in self.per_entity_delta
+    def __init__(  # pylint: disable=too-many-arguments,too-many-locals
+        self,
+        *,
+        verdict: NetPotentialGainVerdict,
+        action_kind: str,
+        score: float,
+        per_entity_delta: Sequence[tuple[object, float]],
+        reasoning: str,
+        evaluated_at_epoch: float,
+        actor: Optional[object] = None,
+        affected_entities: Optional[Sequence[object]] = None,
+        missing_metadata_for: Sequence[object] = (),
+        # Legacy aliases — accepted for back-compat with callers that key
+        # entities by id-only.
+        actor_entity_id: Optional[str] = None,
+        affected_entity_ids: Optional[Sequence[str]] = None,
+    ) -> None:
+        if actor is None and actor_entity_id is not None:
+            actor = actor_entity_id
+        if actor is None:
+            raise TypeError(
+                "NetPotentialGainEvaluation requires 'actor' (EntityRef) "
+                "or 'actor_entity_id' (str)"
+            )
+        if affected_entities is None:
+            affected_entities = affected_entity_ids if affected_entity_ids is not None else ()
+
+        object.__setattr__(self, "verdict", verdict)
+        object.__setattr__(self, "actor", _as_ref(actor))
+        object.__setattr__(self, "action_kind", action_kind)
+        object.__setattr__(
+            self, "affected_entities",
+            tuple(_as_ref(e) for e in affected_entities),
         )
-        if coerced_deltas != self.per_entity_delta:
-            object.__setattr__(self, "per_entity_delta", coerced_deltas)
-        coerced_missing = tuple(_as_ref(e) for e in self.missing_metadata_for)
-        if coerced_missing != self.missing_metadata_for:
-            object.__setattr__(self, "missing_metadata_for", coerced_missing)
+        object.__setattr__(self, "score", score)
+        object.__setattr__(
+            self, "per_entity_delta",
+            tuple((_as_ref(e), float(d)) for e, d in per_entity_delta),
+        )
+        object.__setattr__(self, "reasoning", reasoning)
+        object.__setattr__(self, "evaluated_at_epoch", evaluated_at_epoch)
+        object.__setattr__(
+            self, "missing_metadata_for",
+            tuple(_as_ref(e) for e in missing_metadata_for),
+        )
 
     @property
     def is_positive(self) -> bool:
@@ -166,7 +198,6 @@ class NetPotentialGainEvaluation:
         """Compatibility shim: affected entities' ``entity_id`` strings."""
         return tuple(e.entity_id for e in self.affected_entities)
 
-
 class NetPotentialGainNegative(RuntimeError):
     """Raised by :class:`RaiseOnNegativeGate` on a NEGATIVE verdict.
 
@@ -182,22 +213,28 @@ class NetPotentialGainNegative(RuntimeError):
         )
         self.evaluation = evaluation
 
-
 class NetPotentialGainGate(Protocol):  # pylint: disable=too-few-public-methods
     """Protocol every concrete gate satisfies.
 
     Concrete implementations live alongside this Protocol:
     :class:`DefaultNetPotentialGainGate` here, and domain-specific
     wrappers in caller-side packages.
+
+    The ``evaluate`` method accepts either the typed form
+    (``actor`` + ``affected_entities``) or the legacy entity-id-string
+    form (``actor_entity_id`` + ``affected_entity_ids``). Concrete
+    implementations are expected to honour both.
     """
 
-    def evaluate(
+    def evaluate(  # pylint: disable=too-many-arguments
         self,
         *,
-        actor: EntityRef,
         action_kind: str,
-        affected_entities: Sequence[EntityRef],
         proposed_outcome: Mapping[str, object],
+        actor: Optional[EntityRef] = None,
+        affected_entities: Optional[Sequence[EntityRef]] = None,
+        actor_entity_id: Optional[str] = None,
+        affected_entity_ids: Optional[Sequence[str]] = None,
     ) -> NetPotentialGainEvaluation:
         """Return a verdict for the proposed action.
 
@@ -206,7 +243,6 @@ class NetPotentialGainGate(Protocol):  # pylint: disable=too-few-public-methods
         ``expected_delta_by_entity``). Unknown keys are ignored.
         """
         ...
-
 
 # ---------------------------------------------------------------------------
 # Default scoring heuristics
@@ -237,12 +273,10 @@ ACTION_KIND_HEURISTICS: Final[Mapping[str, float]] = {
     "weaken_observation": -0.20,
 }
 
-
 #: Default neutral-band half-width. An aggregate score within
 #: ``[-DEFAULT_POSITIVE_THRESHOLD, +DEFAULT_POSITIVE_THRESHOLD]`` is
 #: NEUTRAL; outside, the verdict resolves to POSITIVE or NEGATIVE.
 DEFAULT_POSITIVE_THRESHOLD: Final[float] = 0.05
-
 
 def _clamp(value: float, *, low: float, high: float) -> float:
     if value < low:
@@ -251,11 +285,9 @@ def _clamp(value: float, *, low: float, high: float) -> float:
         return high
     return value
 
-
 # ---------------------------------------------------------------------------
 # DefaultNetPotentialGainGate
 # ---------------------------------------------------------------------------
-
 
 @final
 class DefaultNetPotentialGainGate:  # pylint: disable=too-few-public-methods
@@ -475,8 +507,9 @@ class DefaultNetPotentialGainGate:  # pylint: disable=too-few-public-methods
             return None
         if not isinstance(raw, Mapping):
             return None
+        raw_map = cast("Mapping[object, object]", raw)
         result: dict[str, float] = {}
-        for key, value in raw.items():
+        for key, value in raw_map.items():
             if not isinstance(key, str):
                 return None
             try:
@@ -534,11 +567,9 @@ class DefaultNetPotentialGainGate:  # pylint: disable=too-few-public-methods
             f"source={source} per_entity=[{contributions}]"
         )
 
-
 # ---------------------------------------------------------------------------
 # Helper wrappers
 # ---------------------------------------------------------------------------
-
 
 @final
 class RaiseOnNegativeGate:
@@ -588,7 +619,6 @@ class RaiseOnNegativeGate:
         if evaluation.is_negative:
             raise NetPotentialGainNegative(evaluation)
         return evaluation
-
 
 __all__ = [
     "ACTION_KIND_HEURISTICS",

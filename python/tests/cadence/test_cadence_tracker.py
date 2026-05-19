@@ -64,7 +64,7 @@ class TestCadenceConfig:
     )
     def test_bad_values(self, field: str, value: float, match: str) -> None:
         with pytest.raises(ValueError, match=match):
-            CadenceConfig(**{field: value})  # pyright: ignore[reportArgumentType]
+            CadenceConfig(**{field: value})
 
 
 class TestComputePattern:

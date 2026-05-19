@@ -38,7 +38,7 @@ from enum import Enum
 from typing import Final, Mapping, Tuple
 
 class DriftScale(str, Enum):
-    """the host application entity hierarchy scale for aggregation."""
+    """The host application entity hierarchy scale for aggregation."""
 
     CELL = "cell"
     NODE = "node"

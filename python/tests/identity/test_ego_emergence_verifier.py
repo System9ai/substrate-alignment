@@ -59,7 +59,7 @@ class TestObservationValidation:
         kwargs = {"node_id": "n"}
         kwargs[field] = value
         with pytest.raises(ValueError, match=match):
-            _obs(**kwargs)  # type: ignore[arg-type]
+            _obs(**kwargs)
 
     def test_window_end_before_start_rejected(self) -> None:
         with pytest.raises(ValueError, match="window_end"):

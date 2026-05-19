@@ -37,7 +37,7 @@ from enum import Enum
 from typing import Final, Optional, Tuple
 
 class ConformanceScale(str, Enum):
-    """the host application entity hierarchy scale for the assessment."""
+    """The host application entity hierarchy scale for the assessment."""
 
     CELL = "cell"
     NODE = "node"

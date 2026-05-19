@@ -38,13 +38,11 @@ from enum import Enum
 from statistics import mean, pstdev
 from typing import Final, Optional, Tuple
 
-
 class CadenceEventKind(str, Enum):
     """Event kinds that shape cadence history."""
 
     INTERACTION = "interaction"
     EXPLICIT_CLOSE = "explicit_close"
-
 
 class CouplingStatus(str, Enum):
     """Coupling state classification at one query time."""
@@ -55,7 +53,6 @@ class CouplingStatus(str, Enum):
     GHOSTED = "ghosted"
     EXPLICITLY_CLOSED = "explicitly_closed"
     INSUFFICIENT_DATA = "insufficient_data"
-
 
 @dataclass(frozen=True, slots=True)
 class CadenceEvent:
@@ -81,7 +78,6 @@ class CadenceEvent:
         """Sorted-pair canonical key for the event."""
         return _canonical_pair(self.pair_id_a, self.pair_id_b)
 
-
 @dataclass(frozen=True, slots=True)
 class CadencePattern:
     """Historical mean + sample-stdev of inter-interaction intervals."""
@@ -89,7 +85,6 @@ class CadencePattern:
     mean_interval: float
     stdev_interval: float
     sample_size: int
-
 
 @dataclass(frozen=True, slots=True)
 class FieldStrengthReport:
@@ -103,7 +98,6 @@ class FieldStrengthReport:
     expected_cadence: Optional[float]
     rationale: str
 
-
 @dataclass(frozen=True, slots=True)
 class GhostingEvent:
     """Detected ghosting between a pair."""
@@ -114,7 +108,6 @@ class GhostingEvent:
     skipped_cadence_multiples: float
     rationale: str
 
-
 @dataclass(frozen=True, slots=True)
 class CouplingAtRisk:
     """One pair an agent participates in that is at decoupling risk."""
@@ -124,7 +117,6 @@ class CouplingAtRisk:
     field_strength: float
     coupling_status: CouplingStatus
     rationale: str
-
 
 @dataclass(frozen=True, slots=True)
 class CadenceConfig:
@@ -150,13 +142,10 @@ class CadenceConfig:
         if self.field_strength_clamp <= 0:
             raise ValueError("field_strength_clamp must be > 0")
 
-
 DEFAULT_CADENCE_CONFIG: Final[CadenceConfig] = CadenceConfig()
-
 
 def _canonical_pair(a: str, b: str) -> Tuple[str, str]:
     return (a, b) if a <= b else (b, a)
-
 
 class CadenceTracker:
     """Pure-logic cross-entity cadence tracker."""
@@ -383,7 +372,6 @@ class CadenceTracker:
         filtered = [e for e in events if e.canonical_pair == target]
         filtered.sort(key=lambda e: e.timestamp)
         return tuple(filtered)
-
 
 __all__ = [
     "DEFAULT_CADENCE_CONFIG",

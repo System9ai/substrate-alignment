@@ -1,1 +1,1 @@
-"""Substrate-alignment— substrate-state-trajectory status tracking."""
+"""Substrate-state-trajectory status tracking."""

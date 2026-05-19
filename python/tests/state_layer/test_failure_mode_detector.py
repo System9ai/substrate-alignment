@@ -46,7 +46,7 @@ class TestFeatureValidation:
     ) -> None:
         kwargs: dict[str, object] = {field: value}
         with pytest.raises(ValueError, match=match):
-            _features(**kwargs)  # type: ignore[arg-type]
+            _features(**kwargs)
 
 class TestConfig:
     def test_defaults(self) -> None:

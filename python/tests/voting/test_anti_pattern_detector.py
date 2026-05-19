@@ -374,7 +374,7 @@ def test_finding_immutable() -> None:
         detail="x",
     )
     with pytest.raises(AttributeError):
-        f.voter_id = "b"  # type: ignore[misc]
+        f.voter_id = "b"
 
 def test_report_immutable() -> None:
     d = VotingAntiPatternDetector()
@@ -385,7 +385,7 @@ def test_report_immutable() -> None:
         record_opened_at_epoch=0.0,
     )
     with pytest.raises(AttributeError):
-        r.severity = AntiPatternSeverity.HIGH  # type: ignore[misc]
+        r.severity = AntiPatternSeverity.HIGH
 
 def test_report_has_findings_property() -> None:
     d = VotingAntiPatternDetector(min_deliberation_per_voter_seconds=0.0)

@@ -1,4 +1,4 @@
-"""modeling mode signal interpreter
+"""Modeling mode signal interpreter
 
 Pure-logic primitive that **reads** :class:`StateSignalReport`
 (Phase 45 output) and recommends substrate-aligned responses.

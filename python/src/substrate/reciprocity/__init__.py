@@ -1,4 +1,4 @@
-"""Substrate-alignment— reciprocal protocols.
+"""Reciprocal protocols.
 
 Per Axelrod (1980, 1984), tit-for-tat is the canonical
 substrate-aligned reciprocal strategy in repeated multi-entity

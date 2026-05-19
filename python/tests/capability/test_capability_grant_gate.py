@@ -499,4 +499,4 @@ class TestDecisionSurface:
         gate = _gate()
         decision = gate.evaluate(_request())
         with pytest.raises(dataclasses.FrozenInstanceError):
-            decision.verdict = CapabilityGrantVerdict.DENY  # type: ignore[misc]
+            decision.verdict = CapabilityGrantVerdict.DENY

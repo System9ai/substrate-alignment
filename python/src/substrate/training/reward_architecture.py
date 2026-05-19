@@ -130,7 +130,9 @@ class TrainingRewardDecision:
 class RewardSchedulerState:
     """Per-(agent, signal_type) last-emit timestamp map."""
 
-    last_emit_epoch_by_key: dict[str, float] = field(default_factory=dict)
+    last_emit_epoch_by_key: dict[str, float] = field(
+        default_factory=lambda: {},
+    )
 
     @staticmethod
     def _key(agent_id: str, signal_type: SubstrateSignalType) -> str:

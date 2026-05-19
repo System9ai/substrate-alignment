@@ -50,7 +50,7 @@ class TestInputValidation:
     ) -> None:
         kwargs: dict[str, object] = {field: value}
         with pytest.raises(ValueError, match=match):
-            _input(**kwargs)  # type: ignore[arg-type]
+            _input(**kwargs)
 
 class TestConfig:
     def test_defaults(self) -> None:

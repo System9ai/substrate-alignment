@@ -48,7 +48,7 @@ class RealizationKind(str, Enum):
     SYSTEMIC_PATTERN = "systemic_pattern"
 
 class EntityScale(str, Enum):
-    """the host application entity hierarchy scale."""
+    """The host application entity hierarchy scale."""
 
     CELL = "cell"
     NODE = "node"

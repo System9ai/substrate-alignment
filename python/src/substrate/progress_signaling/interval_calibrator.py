@@ -29,9 +29,9 @@ from substrate.resistance_band import (
 
 #: Default per-tier-class targets for `PROGRESS_MARKER` signals (seconds).
 _DEFAULT_TARGETS_BY_TIER_CLASS: Final[Mapping[str, int]] = {
-    "early": 180,        # 3 minutes
-    "mid": 1800,         # 30 minutes
-    "high": 14400,       # 4 hours
+    "early": 180, # 3 minutes
+    "mid": 1800, # 30 minutes
+    "high": 14400, # 4 hours
 }
 
 #: Multiplier applied to map PROGRESS_MARKER → MILESTONE → CONSOLIDATION.

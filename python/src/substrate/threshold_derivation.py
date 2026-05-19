@@ -30,7 +30,6 @@ from substrate.resistance_band import (
     assess,
 )
 
-
 class BandPosition(str, Enum):
     """Three reference points along the productive-resistance band."""
 
@@ -38,12 +37,10 @@ class BandPosition(str, Enum):
     TARGET = "target"
     UPPER = "upper"
 
-
 #: Default minimum threshold floor — derived thresholds never go below
 #: this even when the input capacity is tiny. Prevents pathological
 #: ``derive_threshold(capacity=1)`` cases from rounding to 0.
 DEFAULT_MIN_THRESHOLD: Final[int] = 1
-
 
 def _band_position(
     position: BandPosition,
@@ -56,7 +53,6 @@ def _band_position(
     if position is BandPosition.UPPER:
         return cfg.upper_bound
     return cfg.target
-
 
 def derive_threshold(
     capacity: float,
@@ -77,7 +73,6 @@ def derive_threshold(
     value = int(capacity * fraction)
     return max(min_threshold, value)
 
-
 def derive_threshold_float(
     capacity: float,
     *,
@@ -94,7 +89,6 @@ def derive_threshold_float(
     fraction = _band_position(position, config=config)
     return capacity * fraction
 
-
 def derive_soft_limit(
     capacity: float,
     *,
@@ -104,7 +98,6 @@ def derive_soft_limit(
     return derive_threshold(
         capacity, position=BandPosition.LOWER, config=config,
     )
-
 
 def derive_target(
     capacity: float,
@@ -116,7 +109,6 @@ def derive_target(
         capacity, position=BandPosition.TARGET, config=config,
     )
 
-
 def derive_hard_limit(
     capacity: float,
     *,
@@ -126,7 +118,6 @@ def derive_hard_limit(
     return derive_threshold(
         capacity, position=BandPosition.UPPER, config=config,
     )
-
 
 def derive_quota_pair(
     capacity: float,
@@ -138,7 +129,6 @@ def derive_quota_pair(
         derive_soft_limit(capacity, config=config),
         derive_hard_limit(capacity, config=config),
     )
-
 
 def derive_batch_size(
     max_batch: int,
@@ -156,7 +146,6 @@ def derive_batch_size(
         config=config, min_threshold=min_threshold,
     )
 
-
 def derive_retry_cap(
     max_retries: int,
     *,
@@ -173,7 +162,6 @@ def derive_retry_cap(
         max_retries, position=BandPosition.UPPER,
         config=config, min_threshold=min_threshold,
     )
-
 
 def assess_utilization(
     current: float,
@@ -193,7 +181,6 @@ def assess_utilization(
         raise ValueError(f"current must be >= 0; got {current!r}")
     utilization = min(1.0, current / capacity)
     return assess(utilization, config=config)
-
 
 __all__ = [
     "BandPosition",

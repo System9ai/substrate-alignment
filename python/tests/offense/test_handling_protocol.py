@@ -43,7 +43,7 @@ class TestInputValidation:
 
     def test_same_actor_peer_rejected(self) -> None:
         with pytest.raises(ValueError, match="differ"):
-            _input(actor_entity_id="x", peer="x")
+            _input(actor="x", peer="x")
 
     def test_negative_prior_rejected(self) -> None:
         with pytest.raises(ValueError, match="prior_offense_count"):

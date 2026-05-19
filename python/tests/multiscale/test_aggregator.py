@@ -68,7 +68,7 @@ class TestCellSubstrateObservation:
         }
         kwargs[field] = value
         with pytest.raises(ValueError, match=match):
-            CellSubstrateObservation(**kwargs)  # type: ignore[arg-type]
+            CellSubstrateObservation(**kwargs)
 
 class TestConfig:
     def test_defaults(self) -> None:

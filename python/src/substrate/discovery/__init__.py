@@ -1,1 +1,1 @@
-"""Substrate-alignment— math-discovered-not-invented criteria."""
+"""Math-discovered-not-invented criteria."""

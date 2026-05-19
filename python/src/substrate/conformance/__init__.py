@@ -1,1 +1,1 @@
-"""Substrate-alignment— conformance assessment service."""
+"""Conformance assessment service."""

@@ -54,7 +54,7 @@ class TestCycleObservation:
         defaults: dict[str, object] = {"seq": 0}
         defaults.update(kwargs)
         with pytest.raises(ValueError, match=match):
-            _cycle(**defaults)  # type: ignore[arg-type]
+            _cycle(**defaults)
 
     def test_bad_timestamp(self) -> None:
         with pytest.raises(ValueError, match="timestamp"):

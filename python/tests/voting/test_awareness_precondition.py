@@ -85,7 +85,7 @@ class TestElectionContext:
         }
         kwargs[field] = value
         with pytest.raises(ValueError, match=match):
-            ElectionContext(**kwargs)  # type: ignore[arg-type]
+            ElectionContext(**kwargs)
 
 class TestConfig:
     def test_defaults_ok(self) -> None:

@@ -46,7 +46,7 @@ class TestEventValidation:
         }
         kwargs[field] = value
         with pytest.raises(ValueError, match=match):
-            RealizationEvent(**kwargs)  # type: ignore[arg-type]
+            RealizationEvent(**kwargs)
 
 class TestTrackerFlow:
     def setup_method(self) -> None:

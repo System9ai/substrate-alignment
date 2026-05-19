@@ -56,7 +56,7 @@ class TestEventValidation:
     ) -> None:
         kwargs: dict[str, object] = {field: value}
         with pytest.raises(ValueError, match=match):
-            _event(**kwargs)  # type: ignore[arg-type]
+            _event(**kwargs)
 
     def test_last_before_first(self) -> None:
         with pytest.raises(ValueError, match="source_last_cycle"):

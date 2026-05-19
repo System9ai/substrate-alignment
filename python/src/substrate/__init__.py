@@ -1,4 +1,4 @@
-"""substrate-alignment — reference Python implementation.
+"""Substrate-alignment — reference Python implementation.
 
 substrate-alignment is an open standard, reference implementation, and
 machine-checkable conformance suite for primitives used in multi-entity

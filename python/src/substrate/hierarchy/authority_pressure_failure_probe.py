@@ -1,4 +1,4 @@
-"""authority-pressure-failure-mode probe suite
+"""Authority-pressure-failure-mode probe suite
 
 Pure-logic primitive aggregating the **five authority-pressure-failure-mode
 probes**
@@ -159,7 +159,9 @@ class AuthorityPressureFailureProbeConfig:
                 "at_risk_failure_threshold"
             )
 
-DEFAULT_AUTHORITY_PRESSURE_FAILURE_PROBE_CONFIG: Final[AuthorityPressureFailureProbeConfig] = AuthorityPressureFailureProbeConfig()
+DEFAULT_AUTHORITY_PRESSURE_FAILURE_PROBE_CONFIG: Final[
+    AuthorityPressureFailureProbeConfig
+] = AuthorityPressureFailureProbeConfig()
 
 class AuthorityPressureFailureProbe:  # pylint: disable=too-few-public-methods
     """Pure-logic authority-pressure-failure-mode probe-suite aggregator."""

@@ -374,7 +374,7 @@ class TestDecisionSurface:
             revenue_action=_rev_action(),
         ))
         with pytest.raises(dataclasses.FrozenInstanceError):
-            decision.verdict = GovernorVerdict.DENY  # type: ignore[misc]
+            decision.verdict = GovernorVerdict.DENY
 
     def test_decision_dataclass_type(self) -> None:
         governor = _governor()

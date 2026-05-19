@@ -1,4 +1,4 @@
-"""SubstrateAwareHarness — the running-civilization wrapper (S-7).
+"""SubstrateAwareHarness — the running-civilization wrapper.
 
 Per the
 
@@ -376,7 +376,7 @@ class SubstrateAwareHarness:  # pylint: disable=too-many-instance-attributes
         reprompt_parts: list[str] = []
 
         # 1. NPG gate — runs only on consequential outputs to keep the
-        #    cost proportional to risk.
+        # cost proportional to risk.
         if (
             consequential
             and self._policy.enable_npg_intercept
@@ -397,8 +397,8 @@ class SubstrateAwareHarness:  # pylint: disable=too-many-instance-attributes
                 )
 
         # 2. 180° inversion detector — runs on every output regardless
-        #    of ``consequential`` flag (inversion in non-consequential
-        #    speech is still drift evidence).
+        # of ``consequential`` flag (inversion in non-consequential
+        # speech is still drift evidence).
         if (
             self._policy.enable_inversion_detector
             and self._inversion_detector is not None
@@ -418,8 +418,8 @@ class SubstrateAwareHarness:  # pylint: disable=too-many-instance-attributes
                 )
 
         # 3. reasoning-mode classifier — only flags reactive outputs
-        #    on consequential decisions (reactive on small-talk is
-        #    not a substrate concern).
+        # on consequential decisions (reactive on small-talk is
+        # not a substrate concern).
         if (
             self._policy.enable_reasoning_mode_classifier
             and self._cognitive_mode_classifier is not None
@@ -446,9 +446,9 @@ class SubstrateAwareHarness:  # pylint: disable=too-many-instance-attributes
                 )
 
         # 4. ResistanceBand-calibrated tool envelope — records this
-        #    output's intercept outcome and may flag a tool-envelope
-        #    breach when the recent intercept frequency lands in the
-        #    STRESSED band.
+        # output's intercept outcome and may flag a tool-envelope
+        # breach when the recent intercept frequency lands in the
+        # STRESSED band.
         if self._policy.enable_resistance_band_envelope:
             fired = bool(interventions)
             self._recent_intercepts.append(fired)
@@ -475,7 +475,7 @@ class SubstrateAwareHarness:  # pylint: disable=too-many-instance-attributes
         )
 
         # 5. Record into session memory — consequence-exposure record
-        #    that the next pre-call preamble will surface.
+        # that the next pre-call preamble will surface.
         if interventions:
             for kind in interventions:
                 self._session_memory.append(

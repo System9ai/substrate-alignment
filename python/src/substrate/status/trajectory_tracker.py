@@ -2,7 +2,6 @@
 
 Pure-logic primitive for **long-cycle substrate-state-trajectory
 verification** at both cell and node scales.
-§ "Substrate-state-trajectory accumulation", an entity's status is
 the cumulative substrate-state evidence over an extended window
 the long-cycle "track record" that distinguishes momentary alignment
 from sustained substrate-aligned operation.
@@ -38,7 +37,7 @@ from statistics import mean
 from typing import Final, Tuple
 
 class StatusScale(str, Enum):
-    """the host application entity hierarchy scale for the status tracking."""
+    """The host application entity hierarchy scale for the status tracking."""
 
     CELL = "cell"
     NODE = "node"

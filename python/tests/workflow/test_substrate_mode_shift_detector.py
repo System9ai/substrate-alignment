@@ -374,7 +374,7 @@ class TestReportSurface:
     def test_report_is_frozen(self) -> None:
         report = _detector().detect(())
         with pytest.raises(dataclasses.FrozenInstanceError):
-            report.verdict = SubstrateModeShiftVerdict.STABLE  # type: ignore[misc]
+            report.verdict = SubstrateModeShiftVerdict.STABLE
 
     def test_report_rationale_includes_slope(self) -> None:
         report = _detector().detect_from_ledger(_aligned_ledger(10))

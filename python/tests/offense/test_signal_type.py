@@ -56,11 +56,11 @@ class TestFeatureValidation:
     ) -> None:
         kwargs: dict[str, object] = {field: value}
         with pytest.raises(ValueError, match=match):
-            _features(**kwargs)  # type: ignore[arg-type]
+            _features(**kwargs)
 
     def test_same_actor_peer_rejected(self) -> None:
         with pytest.raises(ValueError, match="must differ"):
-            _features(actor_entity_id="x", peer="x")
+            _features(actor="x", peer="x")
 
 class TestConfig:
     def test_defaults(self) -> None:

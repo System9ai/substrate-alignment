@@ -1,1 +1,1 @@
-"""Substrate-alignment— consequence-exposure chain."""
+"""Consequence-exposure chain."""

@@ -58,7 +58,7 @@ class TestEvidence:
     def test_bad(self, field: str, value: object, match: str) -> None:
         kwargs: dict[str, object] = {field: value}
         with pytest.raises(ValueError, match=match):
-            _evidence(**kwargs)  # type: ignore[arg-type]
+            _evidence(**kwargs)
 
 class TestSignal:
     def test_round_trip(self) -> None:
@@ -85,7 +85,7 @@ class TestSignal:
     def test_bad(self, field: str, value: object, match: str) -> None:
         kwargs: dict[str, object] = {field: value}
         with pytest.raises(ValueError, match=match):
-            _signal(**kwargs)  # type: ignore[arg-type]
+            _signal(**kwargs)
 
 class TestEnumSurface:
     def test_signal_types_constant(self) -> None:

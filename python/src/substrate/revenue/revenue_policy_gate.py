@@ -18,7 +18,6 @@ For a SaaS platform's revenue surface, the *system* the actor is
 embedded in includes the customer. A revenue action that increases
 platform revenue while decreasing customer substrate-state is the
 greed pattern
-§ 2): short-cycle extraction at scale that fails the net-potential-
 gain test. The platform's own drift-detection will flag it later, so
 **building it into the infrastructure wastes the work**.
 

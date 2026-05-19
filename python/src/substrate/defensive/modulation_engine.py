@@ -2,7 +2,6 @@
 
 Pure-logic substrate-mechanical primitive aggregating
 :class:`AttackObservation` records into a defensive response selection
-§ "Cross-entity attack patterns and substrate-aligned defensive
 operation".
 
 Eight attack patterns

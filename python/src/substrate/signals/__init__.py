@@ -1,4 +1,4 @@
-"""Substrate-alignment— substrate-state signal primitives.
+"""Substrate-state signal primitives.
 substrate-state signals are the substrate-mechanical analog of
 emotions: data the modeling mode interpretation layer reads to choose
 response. This subpackage hosts the signal vocabulary and the

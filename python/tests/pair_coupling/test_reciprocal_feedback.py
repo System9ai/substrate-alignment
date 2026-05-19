@@ -44,7 +44,7 @@ class TestAttestationValidation:
     ) -> None:
         kwargs: dict[str, object] = {field: value}
         with pytest.raises(ValueError, match=match):
-            _attest(**kwargs)  # type: ignore[arg-type]
+            _attest(**kwargs)
 
     def test_self_attestation_rejected(self) -> None:
         with pytest.raises(ValueError, match="differ"):

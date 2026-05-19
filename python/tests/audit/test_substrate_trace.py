@@ -240,7 +240,10 @@ class TestLedgerAppend:
         assert rec.sin_dominant is DriftPattern.SELF_REFERENCE_MISCALIBRATION
         assert rec.sin_composite_confidence == 0.85
         assert rec.sin_pride_present is True
-        assert rec.sin_kinds_detected == (DriftPattern.SELF_REFERENCE_MISCALIBRATION, DriftPattern.REACTIVE_NET_NEGATIVE)
+        assert rec.sin_kinds_detected == (
+            DriftPattern.SELF_REFERENCE_MISCALIBRATION,
+            DriftPattern.REACTIVE_NET_NEGATIVE,
+        )
         assert rec.harness_intercept_kinds == (
             InterceptKind.NPG_NEGATIVE,
             InterceptKind.INVERSION_DETECTED,
@@ -626,7 +629,7 @@ class TestRecordFrozen:
             rationale="r", epoch_seconds=1,
         )
         with pytest.raises(dataclasses.FrozenInstanceError):
-            rec.rationale = "mutated"  # type: ignore[misc]
+            rec.rationale = "mutated"
 
     def test_record_equality_by_value(self) -> None:
         ledger_a = SubstrateTraceLedger()

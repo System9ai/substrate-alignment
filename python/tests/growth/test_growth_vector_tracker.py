@@ -57,7 +57,7 @@ class TestGrowthObservation:
     )
     def test_bad_field(self, field: str, value: float, match: str) -> None:
         with pytest.raises(ValueError, match=match):
-            _obs(0, **{field: value})  # type: ignore[arg-type]
+            _obs(0, **{field: value})
 
 class TestConfig:
     def test_defaults(self) -> None:

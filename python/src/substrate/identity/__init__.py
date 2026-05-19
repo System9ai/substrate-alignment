@@ -1,1 +1,1 @@
-"""Substrate-alignment— node-scale identity emergence."""
+"""Node-scale identity emergence."""

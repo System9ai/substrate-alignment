@@ -390,7 +390,7 @@ class TestModuleSurface:
         clf = HeuristicReasoningModeClassifier()
         result = clf.classify_full(output_text="right now")
         with pytest.raises(Exception):  # FrozenInstanceError
-            result.confidence = 0.5  # type: ignore[misc]
+            result.confidence = 0.5
 
     def test_returns_cognitive_mode_classification(self) -> None:
         clf = HeuristicReasoningModeClassifier()

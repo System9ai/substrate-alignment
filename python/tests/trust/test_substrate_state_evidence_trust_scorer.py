@@ -50,7 +50,7 @@ class TestBundleValidation:
     ) -> None:
         kwargs: dict[str, object] = {field: value}
         with pytest.raises(ValueError, match=match):
-            _bundle(**kwargs)  # type: ignore[arg-type]
+            _bundle(**kwargs)
 
     def test_sources_cannot_exceed_attestations(self) -> None:
         with pytest.raises(ValueError, match="unique_source_count"):

@@ -32,7 +32,6 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Final, Optional, Protocol, final
 
-
 class SubstrateMode(str, Enum):
     """The four operating-cycle modes.
 
@@ -56,11 +55,9 @@ class SubstrateMode(str, Enum):
     MIXED = "Mixed"
     UNKNOWN = "Unknown"
 
-
 #: All defined substrate modes. Stays in lockstep with the persisted
 #: ``substrate_mode`` column's CHECK constraint in any host database.
 SUBSTRATE_MODES: Final[frozenset[str]] = frozenset(m.value for m in SubstrateMode)
-
 
 @dataclass(frozen=True, slots=True)
 class AlignmentVector:
@@ -89,7 +86,6 @@ class AlignmentVector:
                 raise ValueError(
                     f"AlignmentVector.{name} must be in [0.0, 1.0]; got {v}"
                 )
-
 
 @dataclass(frozen=True, slots=True)
 class SubstrateMetadata:
@@ -145,7 +141,6 @@ class SubstrateMetadata:
         """The :class:`EntityRef` for this metadata record."""
         return EntityRef(entity_type=self.entity_type, entity_id=self.entity_id)
 
-
 @dataclass(frozen=True, slots=True)
 class EntityRef:
     """A typed reference to one entity in the host application.
@@ -164,7 +159,6 @@ class EntityRef:
             raise ValueError("EntityRef.entity_type must be non-empty")
         if not self.entity_id:
             raise ValueError("EntityRef.entity_id must be non-empty")
-
 
 class SubstrateMetadataStore(Protocol):
     """Storage Protocol for :class:`SubstrateMetadata`.
@@ -197,7 +191,6 @@ class SubstrateMetadataStore(Protocol):
     ) -> SubstrateMetadata:
         """Insert or update the metadata for ``ref``; return the persisted record."""
         ...
-
 
 @final
 class InMemorySubstrateMetadataStore:
@@ -246,7 +239,6 @@ class InMemorySubstrateMetadataStore:
     def clear(self) -> None:
         """Drop every stored record."""
         self._rows.clear()
-
 
 __all__ = [
     "SUBSTRATE_MODES",

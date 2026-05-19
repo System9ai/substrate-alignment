@@ -46,7 +46,7 @@ class TestObservationValidation:
             field: value,
         }
         with pytest.raises(ValueError, match=match):
-            _obs(**kwargs)  # type: ignore[arg-type]
+            _obs(**kwargs)
 
 class TestConfig:
     def test_defaults(self) -> None:

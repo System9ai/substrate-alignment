@@ -98,9 +98,9 @@ class AntiPatternSeverity(str, Enum):
     """Aggregate severity rolled up from the per-voter findings."""
 
     NONE = "none"
-    LOW = "low"        # < 25% of voters flagged
+    LOW = "low" # < 25% of voters flagged
     MEDIUM = "medium"  # 25–66% of voters flagged
-    HIGH = "high"      # > 66% of voters flagged
+    HIGH = "high" # > 66% of voters flagged
 
 ANTI_PATTERN_SEVERITIES: Final[frozenset[str]] = frozenset(
     s.value for s in AntiPatternSeverity

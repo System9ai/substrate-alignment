@@ -24,7 +24,7 @@ class PressureSignal:
     """Request queue depth divided by capacity, in ``[0, 1]``."""
 
     latency_p99_over_slo: float
-    """p99 latency divided by SLO, in ``[0, 1]`` where 1.0 means SLO breached."""
+    """P99 latency divided by SLO, in ``[0, 1]`` where 1.0 means SLO breached."""
 
     concurrency_saturation: float
     """Active workers / max workers, in ``[0, 1]``."""

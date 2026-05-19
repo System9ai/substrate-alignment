@@ -84,7 +84,7 @@ def _clean_action(**overrides: object) -> RevenueActionContext:
         "description": "",
     }
     base.update(overrides)
-    return RevenueActionContext(**base)  # type: ignore[arg-type]
+    return RevenueActionContext(**base)
 
 def _gate(
     npg: Optional[_StubNpgGate] = None,

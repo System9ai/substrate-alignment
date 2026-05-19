@@ -51,7 +51,7 @@ from substrate.trust.substrate_coherence_trust_scorer import (
 )
 
 class TrustScale(str, Enum):
-    """the host application entity hierarchy scale for the trust evaluation."""
+    """The host application entity hierarchy scale for the trust evaluation."""
 
     CELL = "cell"
     NODE = "node"

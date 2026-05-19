@@ -153,7 +153,7 @@ class TestResultIsImmutable:
     def test_frozen(self) -> None:
         r = classify_org("org-1", [])
         with pytest.raises(Exception):
-            r.org_id = "x"  # type: ignore[misc]
+            r.org_id = "x"
 
     def test_dataclass_fields(self) -> None:
         r = OrgSubstrateModeResult(

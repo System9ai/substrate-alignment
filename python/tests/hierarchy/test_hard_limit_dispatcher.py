@@ -81,7 +81,7 @@ class TestAuthorityContextValidation:
         }
         kwargs[field] = value
         with pytest.raises(ValueError, match=match):
-            AuthorityContext(**kwargs)  # type: ignore[arg-type]
+            AuthorityContext(**kwargs)
 
 class TestConfig:
     def test_defaults(self) -> None:

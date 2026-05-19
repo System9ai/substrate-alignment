@@ -96,7 +96,7 @@ def _orchestrator(
 ) -> tuple[SubstrateAlignedTrainingRewards, RewardSchedulerState]:
     state = RewardSchedulerState()
     orch = SubstrateAlignedTrainingRewards(
-        npg_gate=_StubGate(verdict),  # type: ignore[arg-type]
+        npg_gate=_StubGate(verdict),
         emitter=ProgressSignalEmitter(),
         interval_calibrator=SubstrateAlignedIntervalCalibrator(),
         scheduler_state=state,
@@ -129,7 +129,7 @@ class TestRequest:
     def test_bad(self, field: str, value: object, match: str) -> None:
         kwargs: dict[str, object] = {field: value}
         with pytest.raises(ValueError, match=match):
-            _request(**kwargs)  # type: ignore[arg-type]
+            _request(**kwargs)
 
 class TestSchedulerState:
     def test_round_trip(self) -> None:

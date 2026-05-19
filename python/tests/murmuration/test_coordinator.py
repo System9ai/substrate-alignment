@@ -51,7 +51,7 @@ class TestPeerObservation:
         }
         kwargs[field] = value
         with pytest.raises(ValueError, match=match):
-            PeerObservation(**kwargs)  # type: ignore[arg-type]
+            PeerObservation(**kwargs)
 
 class TestConfig:
     def test_defaults(self) -> None:

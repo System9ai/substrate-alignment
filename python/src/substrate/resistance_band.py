@@ -34,7 +34,7 @@ Module API
   ``> 1.0`` scale up, ``< 1.0`` scale down, ``1.0`` hold.
 
 Every entry point rejects an out-of-range utilisation (``< 0``, ``> 1``,
-or non-finite) with ``ValueError`` rather than silently clamping —
+or non-finite) with ``ValueError`` rather than silently clamping
 silent clamping hides caller bugs.
 """
 from __future__ import annotations
@@ -62,7 +62,6 @@ UPPER_BOUND: Final[float] = 1.0 / PHI_SQUARED
 #: closed-loop control. Approximately ``0.357566``.
 TARGET: Final[float] = (LOWER_BOUND + UPPER_BOUND) / 2.0
 
-
 class ResistanceBandClassification(str, Enum):
     """Three-valued band classification.
 
@@ -74,13 +73,11 @@ class ResistanceBandClassification(str, Enum):
     PRODUCTIVE = "productive"
     STRESSED = "stressed"
 
-
 #: All classifications. Stays in lockstep with the enum so any downstream
 #: discriminator or persisted CHECK constraint imports a single source.
 RESISTANCE_BAND_CLASSIFICATIONS: Final[frozenset[str]] = frozenset(
     c.value for c in ResistanceBandClassification
 )
-
 
 @dataclass(frozen=True, slots=True)
 class ResistanceBandConfig:
@@ -125,11 +122,9 @@ class ResistanceBandConfig:
         """Midpoint of the band — the closed-loop target utilisation."""
         return (self.lower_bound + self.upper_bound) / 2.0
 
-
 #: The package-default :class:`ResistanceBandConfig`. Importable as a
 #: singleton when callers don't need to override the bounds.
 DEFAULT_CONFIG: Final[ResistanceBandConfig] = ResistanceBandConfig()
-
 
 @dataclass(frozen=True, slots=True)
 class ResistanceBandAssessment:
@@ -170,7 +165,6 @@ class ResistanceBandAssessment:
         """``True`` iff the classification is STRESSED."""
         return self.classification is ResistanceBandClassification.STRESSED
 
-
 def _validate_utilization(utilization: float) -> None:
     if not math.isfinite(utilization):
         raise ValueError(
@@ -181,7 +175,6 @@ def _validate_utilization(utilization: float) -> None:
         raise ValueError(
             f"utilization must be in [0.0, 1.0]; got {utilization!r}"
         )
-
 
 def classify(
     utilization: float,
@@ -201,7 +194,6 @@ def classify(
     if utilization > cfg.upper_bound:
         return ResistanceBandClassification.STRESSED
     return ResistanceBandClassification.PRODUCTIVE
-
 
 def assess(
     utilization: float,
@@ -239,7 +231,6 @@ def assess(
         config=cfg,
     )
 
-
 def recommend_scaling_factor(
     utilization: float,
     *,
@@ -256,7 +247,6 @@ def recommend_scaling_factor(
     cfg = config or DEFAULT_CONFIG
     return _scaling_factor(utilization=utilization, target=cfg.target)
 
-
 def _scaling_factor(*, utilization: float, target: float) -> float:
     """Return ``target / utilization`` with a finite cap at ``utilization=0``.
 
@@ -268,7 +258,6 @@ def _scaling_factor(*, utilization: float, target: float) -> float:
     if utilization <= 0.0:
         return target * 1e6
     return target / utilization
-
 
 def _render_reasoning(
     *,
@@ -282,7 +271,6 @@ def _render_reasoning(
         f"utilization={utilization:.4f} classification={classification.value} "
         f"distance_to_band={distance:+.4f} target={target:.4f}"
     )
-
 
 __all__ = [
     "DEFAULT_CONFIG",

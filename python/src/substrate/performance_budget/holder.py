@@ -64,8 +64,11 @@ class PerformanceBudgetHolder:
             self._verdict = verdict
 
 # Process-scope default holder. Service runners install on startup.
+# Module-level mutable singleton; lowercase is intentional (it is not
+# a constant — the ``set_default_holder`` / ``reset_default_holder``
+# helpers reassign it).
 
-_default_holder: Optional[PerformanceBudgetHolder] = None
+_default_holder: Optional[PerformanceBudgetHolder] = None  # pylint: disable=invalid-name
 _default_lock = threading.Lock()
 
 def set_default_holder(holder: PerformanceBudgetHolder) -> None:

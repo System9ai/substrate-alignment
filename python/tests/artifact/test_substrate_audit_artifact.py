@@ -517,7 +517,7 @@ class TestModuleSurface:
             ledger=ledger, cell_id="cell-1",
         )
         with pytest.raises(dataclasses.FrozenInstanceError):
-            art.manifest = None  # type: ignore[misc]
+            art.manifest = None
 
     def test_manifest_is_frozen(self) -> None:
         m = SubstrateAuditManifest(
@@ -529,11 +529,11 @@ class TestModuleSurface:
             chain_head_hash=GENESIS_PREV_HASH,
         )
         with pytest.raises(dataclasses.FrozenInstanceError):
-            m.cell_id = "other"  # type: ignore[misc]
+            m.cell_id = "other"
 
     def test_verification_dataclass(self) -> None:
         v = ArtifactVerification(
-            ok=True, chain=None, manifest_ok=True,  # type: ignore[arg-type]
+            ok=True, chain=None, manifest_ok=True,
             hmac_ok=None, reason=None,
         )
         assert v.ok is True

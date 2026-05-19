@@ -196,8 +196,13 @@ class TestSinPatternStats:
         ledger = SubstrateTraceLedger()
         _append(ledger, decision_id="a", epoch_seconds=1,
                 sin_summary=DriftPatternSummary(
-                    dominant_pattern=DriftPattern.SELF_REFERENCE_MISCALIBRATION, composite_confidence=0.8,
-                    amplifier_pattern_present=True, kinds_detected=(DriftPattern.SELF_REFERENCE_MISCALIBRATION, DriftPattern.REACTIVE_NET_NEGATIVE),
+                    dominant_pattern=DriftPattern.SELF_REFERENCE_MISCALIBRATION,
+                    composite_confidence=0.8,
+                    amplifier_pattern_present=True,
+                    kinds_detected=(
+                        DriftPattern.SELF_REFERENCE_MISCALIBRATION,
+                        DriftPattern.REACTIVE_NET_NEGATIVE,
+                    ),
                 ))
         _append(ledger, decision_id="b", epoch_seconds=2,
                 sin_summary=DriftPatternSummary(
@@ -214,9 +219,14 @@ class TestSinPatternStats:
         ledger = SubstrateTraceLedger()
         _append(ledger, decision_id="a", epoch_seconds=1,
                 sin_summary=DriftPatternSummary(
-                    dominant_pattern=DriftPattern.REACTIVE_NET_NEGATIVE, composite_confidence=0.8,
+                    dominant_pattern=DriftPattern.REACTIVE_NET_NEGATIVE,
+                    composite_confidence=0.8,
                     amplifier_pattern_present=False,
-                    kinds_detected=(DriftPattern.REACTIVE_NET_NEGATIVE, DriftPattern.EXTRACTIVE_GAIN, DriftPattern.SELF_REFERENCE_MISCALIBRATION),
+                    kinds_detected=(
+                        DriftPattern.REACTIVE_NET_NEGATIVE,
+                        DriftPattern.EXTRACTIVE_GAIN,
+                        DriftPattern.SELF_REFERENCE_MISCALIBRATION,
+                    ),
                 ))
         m = _agg().aggregate_from_ledger(ledger)
         keys = [s.value for s, _ in m.sin_count_by_kind]
@@ -388,7 +398,7 @@ class TestMetricsSurface:
     def test_metrics_is_frozen(self) -> None:
         m = _agg().aggregate(())
         with pytest.raises(dataclasses.FrozenInstanceError):
-            m.record_count = 99  # type: ignore[misc]
+            m.record_count = 99
 
     def test_window_is_frozen(self) -> None:
         ledger = _seeded_ledger(1)
@@ -396,7 +406,7 @@ class TestMetricsSurface:
             ledger.records(), window_size_seconds=60,
         )[0]
         with pytest.raises(dataclasses.FrozenInstanceError):
-            w.window_start_epoch_seconds = 0  # type: ignore[misc]
+            w.window_start_epoch_seconds = 0
 
     def test_window_carries_metrics_dataclass(self) -> None:
         ledger = _seeded_ledger(1)
