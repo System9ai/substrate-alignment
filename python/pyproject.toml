@@ -113,6 +113,11 @@ disable = [
 max-line-length = 100
 
 [tool.pylint.design]
-max-args = 8
-max-attributes = 12
-max-public-methods = 25
+# Many substrate primitives are dataclasses representing persisted records or
+# protocol surfaces; the default limits are tuned for behavioural classes and
+# are too tight for value-object shapes.
+max-args = 10
+max-attributes = 25
+max-public-methods = 30
+max-locals = 20
+max-branches = 15
