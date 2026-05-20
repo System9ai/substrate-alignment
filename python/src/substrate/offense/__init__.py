@@ -1,1 +1,1 @@
-"""Substrate offense-signal primitives (Companion #2)."""
+"""Substrate offense-signal primitives."""

@@ -1,15 +1,20 @@
-"""Substrate-state-trajectory progress-feedback signal primitives.. Pure-logic primitives for emitting calibrated
-progress-feedback signals along long-cycle substrate-state-trajectories.
+"""Progress-feedback signal primitives.
+
+Pure-logic primitives for emitting calibrated progress-feedback
+signals along long-cycle substrate-state trajectories. The emitter
+composes with :class:`~substrate.resistance_band.ResistanceBandAssessment`
+to gate emission on the productive-resistance band so progress
+signals only fire when the underlying utilisation is in the
+productive zone.
 
 Public surface:
 
-- :class:`SubstrateSignalType` — five signal kinds.
-- :class:`SubstrateEvidence` — evidence record supporting a signal.
+- :class:`SubstrateSignalType` — the five signal kinds.
+- :class:`SubstrateEvidence` — the per-signal evidence record.
 - :class:`SubstrateProgressSignal` — the signal dataclass itself.
-- :class:`ProgressSignalEmitter` — pure-logic emitter that composes
-  with :class:`~app.services.common.substrate.resistance_band.ResistanceBandAssessment`
-  to gate signal emission on the calibrated-resistance band.
+- :class:`ProgressSignalEmitter` — the pure-logic emitter.
 """
+
 from substrate.progress_signaling.signal import (
     SubstrateEvidence,
     SubstrateProgressSignal,

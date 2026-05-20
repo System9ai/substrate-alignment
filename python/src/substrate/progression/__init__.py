@@ -1,8 +1,11 @@
-"""Per-entity substrate-state-trajectory progression model.. Pure-logic primitives — entity progression
-state plus the tier-consolidation engine. The DAO that persists this state
-lives at `app/core/db/directory/substrate/dao_substrate_trajectory_progression.py`;
-this module owns the *value semantics*.
+"""Per-entity substrate-state-trajectory progression model.
+
+Pure-logic primitives for tracking an entity's progression along a
+substrate-state trajectory: the entity-progression state record plus
+the tier-consolidation engine. Persistence is the host application's
+concern; this module owns only the value semantics.
 """
+
 from substrate.progression.model import (
     AchievementRef,
     ConsolidationEvent,

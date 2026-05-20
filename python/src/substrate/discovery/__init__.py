@@ -1,1 +1,1 @@
-"""Math-discovered-not-invented criteria."""
+"""Discovery criteria — primitives for distinguishing discovered structure from invented heuristics."""

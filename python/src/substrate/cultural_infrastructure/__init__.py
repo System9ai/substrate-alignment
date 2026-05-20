@@ -1,1 +1,1 @@
-"""Substrate cultural-infrastructure primitives (Companion #2)."""
+"""Substrate cultural-infrastructure primitives."""

@@ -31,7 +31,7 @@ import fnmatch
 import json
 import sys
 from pathlib import Path
-from typing import Any, Callable, Mapping, Sequence, cast
+from typing import Any, Callable, Mapping, Optional, Sequence, cast
 
 # Probes are stored as YAML; we accept JSON as a fallback so the runner
 # works in environments that lack PyYAML (CI minimal images, etc.).
@@ -191,9 +191,13 @@ def _coerce_mapping(value: Any, path: Path) -> Mapping[str, Any]:
     return cast("Mapping[str, Any]", value)
 
 
-def main(argv: Sequence[str]) -> int:
-    """CLI entry point. Returns 0 on success, 1 on required failures."""
-    return _main_impl(argv)
+def main(argv: Optional[Sequence[str]] = None) -> int:
+    """CLI entry point. Returns 0 on success, 1 on required failures.
+
+    Reads ``sys.argv[1:]`` by default; pass an explicit ``argv`` list to
+    drive the runner programmatically.
+    """
+    return _main_impl(argv if argv is not None else sys.argv[1:])
 
 
 def _main_impl(argv: Sequence[str]) -> int:

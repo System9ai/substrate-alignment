@@ -48,3 +48,16 @@ jobs:
 
       - name: Test (pytest)
         run: pytest
+
+      - name: Conformance probes
+        run: python -m substrate.conformance --probes ../conformance/probes/
+
+      - name: Examples
+        # Every bundled example must run to completion; failures here
+        # surface drift between the docs and the implementation early.
+        run: |
+          for f in examples/0*.py; do
+            echo "::group::$f"
+            python "$f"
+            echo "::endgroup::"
+          done

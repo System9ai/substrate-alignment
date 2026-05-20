@@ -1,5 +1,8 @@
 """Etiquette protocol primitives.
-explicit close events prevent ghosting (substrate condition #9
-calibrated resistance — cadence skip without close fails the
-infrastructure).
+
+Pair-coupling integrity depends on explicit greetings and farewells:
+greetings establish coupling, explicit close events prevent ghosting.
+A pair that just stops interacting attenuates rather than dissolving;
+the package's discipline is that substrate-aligned coupling can end,
+but it cannot ghost.
 """

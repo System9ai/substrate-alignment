@@ -1,1 +1,1 @@
-"""Substrate state-layer primitives (Companion #2)."""
+"""Substrate state-layer primitives."""

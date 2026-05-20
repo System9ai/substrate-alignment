@@ -1,1 +1,1 @@
-"""Substrate encapsulating-context primitives (Companion #2)."""
+"""Substrate encapsulating-context primitives."""
