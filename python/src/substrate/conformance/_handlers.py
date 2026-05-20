@@ -15,7 +15,7 @@ from substrate.alignment_computer import (
     compute_alignment_vector,
     compute_net_potential,
 )
-from substrate.conformance.probe_runner import ProbeFailure
+from substrate.conformance._errors import ProbeFailure
 from substrate.net_potential_gain_gate import (
     DefaultNetPotentialGainGate,
     NetPotentialGainVerdict,

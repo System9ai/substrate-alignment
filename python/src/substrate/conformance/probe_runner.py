@@ -43,16 +43,14 @@ except ImportError:  # pragma: no cover - environment-dependent
 _has_yaml: bool = yaml is not None
 
 
+from substrate.conformance._errors import ProbeFailure
+
 __all__ = [
     "ProbeFailure",
     "ProbeResult",
     "ProbeRunner",
     "run_probes",
 ]
-
-
-class ProbeFailure(AssertionError):
-    """Raised by a probe handler when the implementation did not match expected."""
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
