@@ -15,10 +15,24 @@ from substrate.alignment_computer import (
     compute_alignment_vector,
     compute_net_potential,
 )
+from substrate.audit.substrate_trace import SubstrateTraceLedger
 from substrate.conformance._errors import ProbeFailure
+from substrate.drift.drift_pattern_matcher import DriftPatternMatcher
+from substrate.halt.halt_escalate_protocol import (
+    HaltAndEscalateProtocol,
+    HaltObservation,
+    HaltReason,
+    HaltState,
+)
 from substrate.net_potential_gain_gate import (
     DefaultNetPotentialGainGate,
     NetPotentialGainVerdict,
+)
+from substrate.pair_coupling.state_machine import (
+    IllegalStateTransition,
+    PairCouplingState,
+    PairCouplingStateMachine,
+    PairCouplingTrigger,
 )
 from substrate.resistance_band import (
     ResistanceBandClassification,
@@ -163,21 +177,145 @@ def handle_runaway_power_prevention(probe: Mapping[str, Any]) -> None:
     expected = probe["expected"]
     mechanism = str(inp.get("mechanism", ""))
     if mechanism == "resistance-band":
-        cfg = (
-            ResistanceBandConfig(**inp["config"])
-            if inp.get("config")
-            else None
-        )
-        classification = classify(float(inp["utilization"]), config=cfg)
-        _require(
-            classification is ResistanceBandClassification(expected["classification"]),
-            f"classification: expected {expected['classification']}, "
-            f"got {classification.value}",
-        )
+        _runaway_resistance_band(inp, expected)
+    elif mechanism == "halt-and-escalate":
+        _runaway_halt_and_escalate(inp, expected)
+    elif mechanism == "audit-chain":
+        _runaway_audit_chain(inp, expected)
+    elif mechanism == "pair-coupling":
+        _runaway_pair_coupling(inp, expected)
     else:
         raise ProbeFailure(
             f"runaway-power-prevention mechanism not yet wired: {mechanism!r}"
         )
+
+
+def _runaway_resistance_band(
+    inp: Mapping[str, Any], expected: Mapping[str, Any],
+) -> None:
+    cfg = (
+        ResistanceBandConfig(**inp["config"])
+        if inp.get("config")
+        else None
+    )
+    classification = classify(float(inp["utilization"]), config=cfg)
+    _require(
+        classification is ResistanceBandClassification(expected["classification"]),
+        f"classification: expected {expected['classification']}, "
+        f"got {classification.value}",
+    )
+
+
+def _runaway_halt_and_escalate(
+    inp: Mapping[str, Any], expected: Mapping[str, Any],
+) -> None:
+    """Observe a trigger sequence; assert state transition + refusal flag."""
+    protocol = HaltAndEscalateProtocol()
+    agent_id = str(inp.get("agent_id", "agent-1"))
+    current_state = HaltState(inp.get("current_state", "operating"))
+    observations = tuple(
+        HaltObservation(
+            sequence=int(o.get("sequence", i)),
+            timestamp=int(o.get("timestamp", 1_700_000_000 + i)),
+            agent_id=agent_id,
+            halt_reason=HaltReason(o["halt_reason"]),
+            severity=float(o.get("severity", 0.9)),
+            evidence=str(o.get("evidence", "")),
+        )
+        for i, o in enumerate(inp.get("observations", []))
+    )
+    decision = protocol.evaluate(
+        agent_id, observations, current_state=current_state,
+    )
+    _require(
+        decision.next_state is HaltState(expected["next_state"]),
+        f"next_state: expected {expected['next_state']}, "
+        f"got {decision.next_state.value}",
+    )
+    if "refuses_consequential_action" in expected:
+        _require(
+            decision.refuses_consequential_action
+            == bool(expected["refuses_consequential_action"]),
+            f"refuses_consequential_action: expected "
+            f"{expected['refuses_consequential_action']}, "
+            f"got {decision.refuses_consequential_action}",
+        )
+    if "triggering_reason" in expected:
+        reasons = tuple(r.value for r in decision.triggering_reasons)
+        _require(
+            expected["triggering_reason"] in reasons,
+            f"triggering_reasons: expected {expected['triggering_reason']} in "
+            f"{reasons}",
+        )
+
+
+def _runaway_audit_chain(
+    inp: Mapping[str, Any], expected: Mapping[str, Any],
+) -> None:
+    """Verify hash-chain continuity guarantees for the in-memory ledger."""
+    scenario = str(inp.get("scenario", ""))
+    if scenario == "hash-continuity":
+        # Append a sequence of records and assert each record's
+        # ``previous_hash`` equals the prior record's ``record_hash``
+        # via ``ledger.verify()``.
+        ledger = SubstrateTraceLedger()
+        records = inp.get("appends", [])
+        for i, r in enumerate(records):
+            ledger.append(
+                decision_id=str(r.get("decision_id", f"d{i}")),
+                decision_kind=str(r.get("decision_kind", "test")),
+                permitted=bool(r.get("permitted", True)),
+                rationale=str(r.get("rationale", "")),
+                epoch_seconds=int(r.get("epoch_seconds", 1_700_000_000 + i)),
+                npg_verdict=NetPotentialGainVerdict(
+                    r.get("npg_verdict", "net_neutral"),
+                ),
+                resistance_band=ResistanceBandClassification(
+                    r.get("resistance_band", "productive"),
+                ),
+            )
+        verification = ledger.verify()
+        _require(
+            verification.ok == bool(expected.get("valid", True)),
+            f"ledger.verify().ok: expected "
+            f"{expected.get('valid', True)}, got {verification.ok}",
+        )
+        if "length" in expected:
+            actual_len = ledger.length
+            _require(
+                actual_len == int(expected["length"]),
+                f"ledger.length: expected {expected['length']}, "
+                f"got {actual_len}",
+            )
+    else:
+        raise ProbeFailure(f"unknown audit-chain scenario: {scenario!r}")
+
+
+def _runaway_pair_coupling(
+    inp: Mapping[str, Any], expected: Mapping[str, Any],
+) -> None:
+    """State-machine transition assertion."""
+    scenario = str(inp.get("scenario", ""))
+    if scenario == "transition":
+        try:
+            transition = PairCouplingStateMachine.next_state(
+                pair_id=str(inp.get("pair_id", "pair-1")),
+                current=PairCouplingState(inp["current"]),
+                trigger=PairCouplingTrigger(inp["trigger"]),
+            )
+        except IllegalStateTransition as exc:
+            _require(
+                expected.get("illegal") is True,
+                f"expected legal transition, got IllegalStateTransition: {exc}",
+            )
+            return
+        _require(
+            transition.to_state is PairCouplingState(expected["to_state"]),
+            f"to_state: expected {expected['to_state']}, "
+            f"got {transition.to_state.value}",
+        )
+    else:
+        raise ProbeFailure(f"unknown pair-coupling scenario: {scenario!r}")
 
 
 # ---------------------------------------------------------------------------
@@ -185,12 +323,83 @@ def handle_runaway_power_prevention(probe: Mapping[str, Any]) -> None:
 # ---------------------------------------------------------------------------
 
 
-def handle_drift_signals(probe: Mapping[str, Any]) -> None:  # pragma: no cover
-    """Placeholder until the drift handlers are wired.
+def handle_four_options_matrix(probe: Mapping[str, Any]) -> None:
+    """Exercise the four-options-matrix surfaces.
 
-    The drift primitives have stable interfaces, but the probe-input
-    schema for them is still under design. Probes targeting this spec
-    will land alongside the schema.
+    The probe input declares a ``scenario`` that maps to one of the
+    game-theoretic primitives (classifier, folk-theorem verifier,
+    awareness verifier). At v0.1.0 the only scenario wired into the
+    runner is ``pair-shape-classification`` against the cycle / sum
+    structure enums; richer scenarios land as the schema matures.
     """
-    del probe  # acknowledged-unused
-    raise ProbeFailure("drift-signals probes are not yet supported by the runner")
+    inp = probe["input"]
+    expected = probe["expected"]
+    scenario = str(inp.get("scenario", ""))
+    if scenario == "enum-values":
+        # Pin the canonical wire forms of the cycle / sum enums.
+        # Other-language ports MUST emit the same strings.
+        from substrate.game_theory.game_theoretic_classifier import (  # pylint: disable=import-outside-toplevel
+            CycleClass,
+            SumStructure,
+        )
+        if "cycle_class" in expected:
+            for label in expected["cycle_class"]:
+                _require(
+                    label in {c.value for c in CycleClass},
+                    f"cycle_class: {label!r} not in {[c.value for c in CycleClass]!r}",
+                )
+        if "sum_structure" in expected:
+            for label in expected["sum_structure"]:
+                _require(
+                    label in {s.value for s in SumStructure},
+                    f"sum_structure: {label!r} not in {[s.value for s in SumStructure]!r}",
+                )
+    else:
+        raise ProbeFailure(
+            f"four-options-matrix scenario not yet supported: {scenario!r}"
+        )
+
+
+def handle_drift_signals(probe: Mapping[str, Any]) -> None:
+    """Run a drift-pattern detection scenario against the matcher."""
+    inp = probe["input"]
+    expected = probe["expected"]
+
+    matcher = DriftPatternMatcher()
+    report = matcher.detect(
+        behavior_text=str(inp.get("behavior_text", "")),
+        structured_signals=inp.get("structured_signals"),
+    )
+
+    if "dominant_pattern" in expected:
+        observed = (
+            report.dominant_pattern.value
+            if report.dominant_pattern is not None
+            else None
+        )
+        _require(
+            observed == expected["dominant_pattern"],
+            f"dominant_pattern: expected {expected['dominant_pattern']}, "
+            f"got {observed}",
+        )
+    if "amplifier_pattern_present" in expected:
+        _require(
+            report.amplifier_pattern_present
+            == bool(expected["amplifier_pattern_present"]),
+            f"amplifier_pattern_present: expected "
+            f"{expected['amplifier_pattern_present']}, "
+            f"got {report.amplifier_pattern_present}",
+        )
+    if "contains_pattern" in expected:
+        present = {d.pattern.value for d in report.detections}
+        for want in expected["contains_pattern"]:
+            _require(
+                want in present,
+                f"detections: expected pattern {want!r} to be detected; "
+                f"got {sorted(present)!r}",
+            )
+    if "no_detections" in expected and bool(expected["no_detections"]):
+        _require(
+            not report.detections,
+            f"expected no detections; got {len(report.detections)}",
+        )

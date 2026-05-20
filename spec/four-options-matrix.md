@@ -28,7 +28,8 @@ A conforming classifier MUST tag each interaction with two orthogonal labels.
 | `NEGATIVE_SUM` | `"negative_sum"` | The interaction destroys aggregate value regardless of strategy. |
 | `MIXED_MOTIVE` | `"mixed_motive"` | Partial alignment; structure varies across actions. |
 | `INSUFFICIENT_DATA` | `"insufficient_data"` | The classifier cannot determine payoff structure. |
-| `INDEPENDENT` | `"independent"` | The entities' payoffs are uncoupled. |
+
+(Uncoupled payoffs — where one entity's outcome does not depend on the other — are surfaced through the orthogonal `CoordinationKind.INDEPENDENT` classification rather than as a sum-structure value.)
 
 The serialised forms are canonical.
 

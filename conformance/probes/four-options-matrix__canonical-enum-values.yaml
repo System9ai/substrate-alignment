@@ -1,0 +1,25 @@
+spec: four-options-matrix
+spec_version: ">=0.1"
+scenario: canonical-enum-values
+required: true
+metadata:
+  rationale: >
+    The canonical wire forms of the cycle-class and sum-structure enums
+    are stable. Conforming implementations in other languages MUST emit
+    these exact strings.
+
+input:
+  scenario: enum-values
+
+expected:
+  cycle_class:
+    - one_shot
+    - repeated_finite
+    - repeated_infinite
+    - unknown
+  sum_structure:
+    - zero_sum
+    - positive_sum
+    - negative_sum
+    - mixed_motive
+    - insufficient_data

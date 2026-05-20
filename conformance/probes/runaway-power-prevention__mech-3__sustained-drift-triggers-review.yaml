@@ -1,0 +1,25 @@
+spec: runaway-power-prevention
+spec_version: ">=0.1"
+scenario: mech-3__sustained-drift-triggers-review
+required: true
+metadata:
+  mechanism: 3
+  rationale: >
+    Mechanism 3 — HaltAndEscalate. A single SUSTAINED_DRIFT_CRITICAL
+    observation at review severity MUST move an OPERATING agent into
+    SUBSTRATE_MODE_REVIEW (the gate-narrowing state) and MUST set
+    refuses_consequential_action. Escalation to the harder ESCALATED
+    state requires the config's sustained-critical observation count;
+    that path is covered by the inversion-escalates probe.
+
+input:
+  mechanism: halt-and-escalate
+  agent_id: agent-1
+  current_state: operating
+  observations:
+    - { halt_reason: sustained_drift_critical, severity: 0.95 }
+
+expected:
+  next_state: substrate_mode_review
+  refuses_consequential_action: true
+  triggering_reason: sustained_drift_critical

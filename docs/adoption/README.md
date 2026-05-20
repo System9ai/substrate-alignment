@@ -6,13 +6,14 @@ Concrete integration recipes for common Python frameworks. Each guide is self-co
 | --- | --- | --- |
 | [`fastapi-permission-gate.md`](fastapi-permission-gate.md) | `NetPotentialGainGate` | FastAPI permission endpoints |
 | [`redis-rate-limiter.md`](redis-rate-limiter.md) | `ResistanceBand` + threshold helpers | Redis-backed token-bucket rate limiter |
+| [`celery-task-gate.md`](celery-task-gate.md) | `NetPotentialGainGate` | Celery worker task decorator |
+| [`sqlalchemy-metadata-store.md`](sqlalchemy-metadata-store.md) | `SubstrateMetadataStore` Protocol | SQLAlchemy 2.x ORM model + upsert |
 
 Coming with later releases:
 
-- `celery-task-gate.md` — wrap Celery tasks with the NPG gate.
 - `temporal-workflow-halt.md` — wire the halt-and-escalate protocol into a Temporal workflow.
-- `sqlalchemy-metadata-store.md` — implement `SubstrateMetadataStore` against a SQLAlchemy ORM model.
-- `audit-chain-postgres.md` — back the audit ledger with a Postgres table; peer-witness signing across services.
+- `audit-chain-postgres.md` — back the substrate-trace ledger with a Postgres table; peer-witness signing across services.
+- `django-permission-gate.md` — the Django equivalent of the FastAPI recipe.
 
 ## Pattern
 

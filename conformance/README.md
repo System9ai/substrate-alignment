@@ -88,7 +88,27 @@ expected:
 
 ### `spec: drift-signals`
 
-Schema is under design; probes for this spec will land alongside the schema. The probe runner currently rejects `drift-signals` probes with an advisory error.
+```yaml
+input:
+  behavior_text: <str>             # optional; passed to text-marker predicates
+  structured_signals:
+    <feature_name>: <float>        # signals consumed by feature predicates
+expected:
+  dominant_pattern: <pattern>      # optional — exact dominant pattern
+  amplifier_pattern_present: <bool># optional — True when SELF_REFERENCE_MISCALIBRATION fired
+  contains_pattern: [<pattern>...] # optional — assert these patterns are in the detection set
+  no_detections: <bool>            # optional — assert the trace produced no detections
+```
+
+### `spec: four-options-matrix`
+
+```yaml
+input:
+  scenario: enum-values            # only scenario wired at v0.1.0
+expected:
+  cycle_class: [<str>, ...]        # canonical cycle-class strings the impl must emit
+  sum_structure: [<str>, ...]      # canonical sum-structure strings the impl must emit
+```
 
 ## Running probes
 
@@ -154,6 +174,8 @@ conformance/
 | --- | --- | --- |
 | 5 | `operating-mode` | classifier banding, net-potential aggregation |
 | 4 | `npg-gate-protocol` | verdict resolution: positive / negative / neutral / insufficient |
-| 3 | `runaway-power-prevention` | mechanism 4 (ResistanceBand) under/in/over band |
+| 8 | `runaway-power-prevention` | mech-2 hash chain, mech-3 halt states (3 probes), mech-4 ResistanceBand (3 probes), mech-5 pair-coupling transitions (2 probes) |
+| 3 | `drift-signals` | extractive-gain detection, self-reference amplifier, false-positive-free clean signals |
+| 1 | `four-options-matrix` | canonical enum-value pinning |
 
-All 12 currently bundled probes pass against the Python reference implementation.
+All 22 currently bundled probes pass against the Python reference implementation. Mechanism 1 (NPG gate) is covered through the dedicated `npg-gate-protocol` probes; mechanism 6 (operating-mode classification) is covered through the dedicated `operating-mode` probes.

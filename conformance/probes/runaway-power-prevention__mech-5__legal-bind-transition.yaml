@@ -1,0 +1,19 @@
+spec: runaway-power-prevention
+spec_version: ">=0.1"
+scenario: mech-5__legal-bind-transition
+required: true
+metadata:
+  mechanism: 5
+  rationale: >
+    Mechanism 5 — Pair-coupling integrity. The state machine MUST permit
+    the FORMING → COUPLED transition under the BIND trigger.
+
+input:
+  mechanism: pair-coupling
+  scenario: transition
+  pair_id: pair-1
+  current: forming
+  trigger: bind
+
+expected:
+  to_state: coupled

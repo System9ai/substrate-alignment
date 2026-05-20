@@ -1,0 +1,20 @@
+spec: runaway-power-prevention
+spec_version: ">=0.1"
+scenario: mech-5__illegal-transition-rejected
+required: true
+metadata:
+  mechanism: 5
+  rationale: >
+    Mechanism 5 — Pair-coupling integrity. An illegal transition
+    (e.g. dissolving → bind) MUST be rejected; the state machine
+    refuses untyped transitions rather than silently accepting them.
+
+input:
+  mechanism: pair-coupling
+  scenario: transition
+  pair_id: pair-1
+  current: dissolving
+  trigger: bind
+
+expected:
+  illegal: true
