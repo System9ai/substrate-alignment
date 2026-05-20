@@ -29,7 +29,14 @@ Future language bindings (`rust/`, `go/`, `ts/`) will land as sibling top-level 
 
 ## Status
 
-Pre-release. The repository scaffold is in place; the reference Python implementation is being extracted from the [System9](https://system9.ai) platform, where these primitives are in production use. First tagged release: `v0.1.0`.
+Pre-release. The Python reference implementation has been extracted from the [System9](https://system9.ai) platform, where these primitives are in production use. The first tagged release will be `v0.1.0`.
+
+What is in place today on `main`:
+
+- Six normative specification documents under [`spec/`](spec/).
+- A YAML probe-runner under [`conformance/`](conformance/); 12 probes currently bundled, all passing against the Python reference.
+- 136 source modules and 137 test modules under [`python/`](python/); 2315 tests passing, pyright strict 0/0/0, pylint 10.00/10.
+- Engineering concept docs and adoption recipes under [`docs/`](docs/).
 
 The [CHANGELOG](CHANGELOG.md) tracks released changes; the **Unreleased** section reflects what is in flight on `main`.
 
@@ -77,21 +84,42 @@ substrate-alignment/
 
 ## Quick start
 
-The Python package exposes a small, stable surface of primitives. As they are ported, they become importable from the top-level `substrate` module:
-
 ```python
-from substrate import NetPotentialGainGate, ResistanceBand, SubstrateMode
+from substrate import (
+    DefaultNetPotentialGainGate, EntityRef,
+    InMemorySubstrateMetadataStore, RaiseOnNegativeGate,
+)
+
+store = InMemorySubstrateMetadataStore()         # zero-dep default; swap for your backend
+gate = RaiseOnNegativeGate(
+    inner=DefaultNetPotentialGainGate(metadata_store=store),
+)
+
+# Seed a couple of entities, then route a consequential decision through the gate.
+gate.evaluate_or_raise(
+    actor=EntityRef("agent", "alice"),
+    action_kind="teach",
+    affected_entities=[EntityRef("user", "bob")],
+    proposed_outcome={"expected_delta_by_entity": {"bob": 0.3}},
+)
 ```
 
-See [`python/examples/`](python/examples/) for end-to-end snippets and [`docs/adoption/`](docs/adoption/) for integration recipes (FastAPI permission flows, Redis-backed rate limiters, Celery workers, Temporal workflows).
+See [`python/examples/`](python/examples/) for four self-contained runnable snippets (NPG gate, resistance band, alignment refresher, metadata-store Protocol) and [`docs/adoption/`](docs/adoption/) for framework integration recipes (FastAPI, Redis-backed rate limiter; Celery and Temporal coming).
+
+Run the bundled conformance probes against the reference implementation:
+
+```bash
+python -m substrate.conformance --probes conformance/probes/
+# 12/12 probes passed (0 required failures, 0 advisory failures).
+```
 
 ## Documentation
 
-- **Concepts** — [`docs/concepts/`](docs/concepts/): substrate conditions, drift signals, runaway-power-prevention mechanisms.
-- **Specifications** — [`spec/`](spec/): language-neutral interface contracts and conformance criteria.
-- **Conformance** — [`conformance/`](conformance/): machine-checkable behavioral probes.
-- **Adoption** — [`docs/adoption/`](docs/adoption/): framework integration recipes.
-- **Case study** — [`docs/case-studies/system9.md`](docs/case-studies/): production deployment narrative.
+- **Specifications** — [`spec/`](spec/): six normative documents covering operating-mode classification, the NPG gate Protocol, drift signals, runaway-power-prevention mechanisms, the four-options matrix, and conformance criteria.
+- **Conformance** — [`conformance/`](conformance/): YAML probe runner plus 12 bundled probes; reference implementation passes them all.
+- **Concepts** — [`docs/concepts/`](docs/concepts/): engineering explanations of each primitive (operating-mode, NPG gate, resistance band, runaway-power prevention; more coming).
+- **Adoption** — [`docs/adoption/`](docs/adoption/): framework integration recipes (FastAPI permission gate, Redis-backed rate limiter; more coming).
+- **Case study** — [`docs/case-studies/system9.md`](docs/case-studies/): production deployment narrative *(under construction)*.
 
 ## Contributing
 

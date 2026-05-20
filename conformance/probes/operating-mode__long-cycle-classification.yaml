@@ -1,0 +1,15 @@
+spec: operating-mode
+spec_version: ">=0.1"
+scenario: long-cycle-classification
+required: true
+metadata:
+  rationale: >
+    A net_potential at or above the long_cycle_threshold (default 0.70)
+    MUST classify as LONG_CYCLE.
+
+input:
+  fn: auto_classify_mode
+  net_potential: 0.80
+
+expected:
+  mode: LongCycle

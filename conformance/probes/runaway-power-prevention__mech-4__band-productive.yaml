@@ -1,0 +1,16 @@
+spec: runaway-power-prevention
+spec_version: ">=0.1"
+scenario: mech-4__band-productive
+required: true
+metadata:
+  mechanism: 4
+  rationale: >
+    Mechanism 4 — ResistanceBand. A utilisation inside `[1/3, 1/φ²]`
+    MUST classify as PRODUCTIVE. Boundaries are inclusive.
+
+input:
+  mechanism: resistance-band
+  utilization: 0.357566
+
+expected:
+  classification: productive

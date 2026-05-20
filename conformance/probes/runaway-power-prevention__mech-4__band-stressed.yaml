@@ -1,0 +1,16 @@
+spec: runaway-power-prevention
+spec_version: ">=0.1"
+scenario: mech-4__band-stressed
+required: true
+metadata:
+  mechanism: 4
+  rationale: >
+    Mechanism 4 — ResistanceBand. A utilisation strictly above the default
+    upper bound (1/φ²) MUST classify as STRESSED.
+
+input:
+  mechanism: resistance-band
+  utilization: 0.60
+
+expected:
+  classification: stressed

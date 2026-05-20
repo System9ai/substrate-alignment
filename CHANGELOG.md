@@ -38,10 +38,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `realization`, `reciprocity`, `revenue`, `signals`, `state_layer`, `status`,
   `tells`, `training`, `trust`, `voting`, `workflow`.
 
+- Six normative specifications under `spec/`: `operating-mode.md`,
+  `npg-gate-protocol.md`, `drift-signals.md`, `runaway-power-prevention.md`,
+  `four-options-matrix.md`, and the updated `conformance-criteria.md`.
+- Conformance probe runner under `python/src/substrate/conformance/` —
+  consumes YAML probes, dispatches per-spec handlers, ships a CLI
+  entry point at `python -m substrate.conformance`.
+- 12 bundled conformance probes covering `operating-mode`,
+  `npg-gate-protocol`, and `runaway-power-prevention` (mechanism 4).
+  All pass against the Python reference implementation.
+- Four runnable examples under `python/examples/`: NPG gate (positive /
+  negative / insufficient verdicts), resistance band (classification +
+  derived thresholds), alignment refresher (component-merge flow),
+  metadata-store Protocol (in-memory default + user-supplied
+  implementation).
+- Engineering concept docs under `docs/concepts/`: operating-mode, NPG
+  gate, resistance band, runaway-power prevention.
+- Adoption recipes under `docs/adoption/`: FastAPI permission gate,
+  Redis-backed rate limiter from `ResistanceBand`.
+- `pyyaml` added as an optional dependency under the `yaml` extra (used
+  by the conformance runner).
+
 ### Verified
 - 2315 unit tests passing across the Python package.
+- 12 / 12 conformance probes passing against the reference implementation.
 - Pyright strict: 0 errors, 0 warnings, 0 informations on the production surface.
 - Pylint: 10.00/10 across the production surface and the test suite.
 - CI matrix passing on Python 3.11, 3.12, 3.13, 3.14.
+- Federal-procurement test: zero references to internal System9 documents,
+  internal subsystem names, or `infinity-code`/`.claude/` paths anywhere in
+  source or test files.
 
 [Unreleased]: https://github.com/System9ai/substrate-alignment/commits/main

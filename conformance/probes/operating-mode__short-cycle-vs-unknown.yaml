@@ -1,0 +1,16 @@
+spec: operating-mode
+spec_version: ">=0.1"
+scenario: short-cycle-vs-unknown
+required: true
+metadata:
+  rationale: >
+    A net_potential strictly greater than 0 but below mixed_threshold MUST
+    classify as SHORT_CYCLE. A net_potential of exactly 0 MUST classify
+    as UNKNOWN (no signal yet — distinguishable from "actively low").
+
+input:
+  fn: auto_classify_mode
+  net_potential: 0.00
+
+expected:
+  mode: Unknown

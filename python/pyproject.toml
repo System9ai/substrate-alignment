@@ -44,10 +44,15 @@ classifiers = [
 dependencies = []
 
 [project.optional-dependencies]
+# Used at runtime only by ``substrate.conformance`` to consume YAML probe
+# files. Kept as an optional extra so callers who do not exercise the
+# conformance harness need not install it.
+yaml = ["pyyaml>=6.0"]
 dev = [
   "pytest>=8.1",
   "pyright>=1.1.350",
   "pylint>=3.2",
+  "pyyaml>=6.0",
 ]
 
 [project.urls]
