@@ -7,94 +7,128 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Future v0.2.0 candidate items will be tracked here. See
+[`docs/preprint/`](docs/preprint/) for the in-flight preprint that ships
+alongside the v0.2.0 tag.
+
+## [0.1.0] — pending tag
+
+> Update the date above to the actual tag date when `git tag v0.1.0` is pushed.
+
+The initial public release. Substrate-alignment ships as three coordinated
+deliverables: language-neutral specifications, a machine-checkable
+conformance suite, and a Python reference implementation. Together they let
+multi-entity agent systems make verifiable alignment claims that survive
+procurement-grade review.
+
 ### Added
-- Repository skeleton: top-level project metadata, Python package scaffold,
-  CI and PyPI publish workflows, stub specification and conformance directories.
-- Vocabulary types: `SubstrateMode`, `AlignmentVector`, `SubstrateMetadata`,
-  `EntityRef`, plus the `SUBSTRATE_MODES` constant.
+
+#### Specifications and conformance
+- Six normative specifications under [`spec/`](spec/): `operating-mode.md`,
+  `npg-gate-protocol.md`, `drift-signals.md`,
+  `runaway-power-prevention.md`, `four-options-matrix.md`, and the
+  `conformance-criteria.md` witness contract.
+- Conformance probe runner under
+  [`python/src/substrate/conformance/`](python/src/substrate/conformance/)
+  — consumes YAML probes, dispatches per-spec handlers, ships a CLI
+  entry point at `python -m substrate.conformance` and a console-script
+  `substrate-conformance`.
+- 22 bundled conformance probes covering `operating-mode` (5),
+  `npg-gate-protocol` (4), `drift-signals` (3),
+  `runaway-power-prevention` (8 across mechanisms 2/3/4/5), and
+  `four-options-matrix` (1). All pass against the Python reference.
+- The probe-runner schema (`spec`, `spec_version`, `scenario`,
+  `required`, `metadata`, `setup`, `input`, `expected`) documented at
+  [`conformance/README.md`](conformance/README.md).
+
+#### Python reference implementation
+- Top-level vocabulary types: `SubstrateMode`, `AlignmentVector`,
+  `SubstrateMetadata`, `EntityRef`, plus the `SUBSTRATE_MODES` constant.
 - Host-integration surface: `SubstrateMetadataStore` Protocol plus the
-  zero-dependency `InMemorySubstrateMetadataStore` default implementation.
-- Alignment-vector primitives: `AlignmentWeights`, `compute_alignment_vector`,
-  `compute_net_potential`, `auto_classify_mode`.
+  zero-dependency `InMemorySubstrateMetadataStore` default
+  implementation.
+- Alignment-vector primitives: `AlignmentWeights`,
+  `compute_alignment_vector`, `compute_net_potential`,
+  `auto_classify_mode`.
 - `AlignmentRefresher` — coordinator that folds a single signal-source
   component into the merged vector under the storage Protocol.
-- `ResistanceBand` primitive — the productive-resistance band classifier
-  (lower bound `1/3`, upper bound `1/φ²`), with `classify`, `assess`,
-  `recommend_scaling_factor`, and `ResistanceBandAssessment`.
-- Band-derived threshold helpers (`derive_threshold`, `derive_soft_limit`,
-  `derive_hard_limit`, `derive_target`, `derive_batch_size`, `derive_retry_cap`,
-  `assess_utilization`, `BandPosition`).
-- `NetPotentialGainGate` Protocol plus `DefaultNetPotentialGainGate` reference
-  implementation, `RaiseOnNegativeGate` adapter, and
+- `ResistanceBand` primitive — the productive-resistance band
+  classifier (lower bound `1/3`, upper bound `1/φ²`), with `classify`,
+  `assess`, `recommend_scaling_factor`, and `ResistanceBandAssessment`.
+- Band-derived threshold helpers (`derive_threshold`,
+  `derive_soft_limit`, `derive_hard_limit`, `derive_target`,
+  `derive_batch_size`, `derive_retry_cap`, `assess_utilization`,
+  `BandPosition`).
+- `NetPotentialGainGate` Protocol plus `DefaultNetPotentialGainGate`
+  reference implementation, `RaiseOnNegativeGate` adapter, and
   `NetPotentialGainEvaluation` frozen result type. Gate composes the
-  `SubstrateMetadataStore` Protocol and accepts both typed (`EntityRef`) and
-  legacy (entity-id string) caller forms.
-- Sub-packages: `cadence`, `audit`, `artifact`, `capability`, `cognition`,
-  `conformance`, `cross_entity`, `cultural_infrastructure`, `defensive`,
-  `discovery`, `drift`, `encapsulating_context`, `etiquette`, `exposure`,
-  `game_theory`, `governor`, `growth`, `halt`, `harness`, `hierarchy`,
-  `identity`, `inversion`, `metrics`, `multiscale`, `murmuration`, `offense`,
-  `pair_coupling`, `performance_budget`, `progress_signaling`, `progression`,
-  `realization`, `reciprocity`, `revenue`, `signals`, `state_layer`, `status`,
-  `tells`, `training`, `trust`, `voting`, `workflow`.
+  `SubstrateMetadataStore` Protocol and accepts both typed (`EntityRef`)
+  and legacy (entity-id string) caller forms.
+- Sub-packages: `cadence`, `audit`, `artifact`, `capability`,
+  `cognition`, `conformance`, `cross_entity`,
+  `cultural_infrastructure`, `defensive`, `discovery`, `drift`,
+  `encapsulating_context`, `etiquette`, `exposure`, `game_theory`,
+  `governor`, `growth`, `halt`, `harness`, `hierarchy`, `identity`,
+  `inversion`, `metrics`, `multiscale`, `murmuration`, `offense`,
+  `pair_coupling`, `performance_budget`, `progress_signaling`,
+  `progression`, `realization`, `reciprocity`, `revenue`, `signals`,
+  `state_layer`, `status`, `tells`, `training`, `trust`, `voting`,
+  `workflow`.
+- `pyyaml` available as an optional dependency under the `yaml` extra
+  (used by the conformance runner).
 
-- Six normative specifications under `spec/`: `operating-mode.md`,
-  `npg-gate-protocol.md`, `drift-signals.md`, `runaway-power-prevention.md`,
-  `four-options-matrix.md`, and the updated `conformance-criteria.md`.
-- Conformance probe runner under `python/src/substrate/conformance/` —
-  consumes YAML probes, dispatches per-spec handlers, ships a CLI
-  entry point at `python -m substrate.conformance`.
-- 12 bundled conformance probes covering `operating-mode`,
-  `npg-gate-protocol`, and `runaway-power-prevention` (mechanism 4).
-  All pass against the Python reference implementation.
-- Four runnable examples under `python/examples/`: NPG gate (positive /
-  negative / insufficient verdicts), resistance band (classification +
-  derived thresholds), alignment refresher (component-merge flow),
-  metadata-store Protocol (in-memory default + user-supplied
-  implementation).
-- Engineering concept docs under `docs/concepts/`: operating-mode, NPG
-  gate, resistance band, runaway-power prevention.
-- Adoption recipes under `docs/adoption/`: FastAPI permission gate,
-  Redis-backed rate limiter from `ResistanceBand`, Celery task gate
-  decorator, and a SQLAlchemy implementation of the
-  `SubstrateMetadataStore` Protocol.
-- Engineering concept docs covering every primitive category named in
-  `spec/`: operating-mode, alignment-refresher, NPG gate, resistance
-  band, drift-signals, audit-chain, halt-and-escalate, pair-coupling,
-  runaway-power prevention, four-options-matrix.
+#### Examples
+- Six runnable end-to-end snippets under
+  [`python/examples/`](python/examples/):
+  - `01_npg_gate.py` — positive / negative / insufficient verdicts;
+    `RaiseOnNegativeGate` adapter.
+  - `02_resistance_band.py` — classification + derived thresholds.
+  - `03_alignment_refresher.py` — folding signal-source updates.
+  - `04_metadata_store.py` — Protocol implementation pattern.
+  - `05_halt_and_escalate.py` — full halt protocol with audit chain.
+  - `06_full_governor_loop.py` — composition pattern: refresh → gate →
+    classify → ledger.
+
+#### Documentation
+- Engineering concept docs under [`docs/concepts/`](docs/concepts/)
+  covering every primitive category: operating-mode,
+  alignment-refresher, NPG gate, resistance band, drift-signals,
+  audit-chain, halt-and-escalate, pair-coupling, runaway-power
+  prevention, four-options-matrix.
+- Framework integration recipes under
+  [`docs/adoption/`](docs/adoption/): FastAPI permission gate, Django
+  permission gate (CBV + DRF variants), Celery task gate, Temporal
+  workflow halt-and-escalate, Redis-backed rate limiter from
+  `ResistanceBand`, SQLAlchemy implementation of the
+  `SubstrateMetadataStore` Protocol, Postgres-backed audit chain with
+  peer-witness signing.
 - Anonymised production-deployment narrative at
-  `docs/case-studies/system9.md` — operating-mode distribution, gate
-  verdict mix, drift-signal cadence, halt-and-escalate frequency,
-  resistance-band coverage, audit-chain operation at scale, and the
-  three load-bearing properties worth surfacing for any team replicating
-  the pattern.
-- `pyyaml` added as an optional dependency under the `yaml` extra (used
-  by the conformance runner).
-- Probe-runner handlers for every runaway-power-prevention mechanism
-  (audit-chain hash continuity, halt-and-escalate state transitions,
-  pair-coupling state machine, plus the existing resistance-band
-  handler), the drift-signals primitive (feeding the
-  `DriftPatternMatcher`), and the four-options-matrix enum-pinning
-  scenario. The runner now dispatches five spec slugs.
-- 10 additional conformance probes (total now 22): three for
-  halt-and-escalate state transitions, one for audit-chain hash
-  continuity, two for pair-coupling state-machine transitions (legal
-  + illegal), three for drift-pattern detection (extractive-gain,
-  self-reference amplifier, false-positive-free clean signals), one
-  for four-options-matrix canonical enum values.
-- Examples 05 (full halt-and-escalate flow with audit chain) and 06
-  (full governor loop: refresh → gate → classify → ledger) under
-  `python/examples/`. Bundled examples now total six.
+  [`docs/case-studies/system9.md`](docs/case-studies/system9.md) —
+  operating-mode distribution, gate verdict mix, drift-signal cadence,
+  halt-and-escalate frequency, resistance-band coverage, audit-chain
+  operation at scale, and the three load-bearing properties worth
+  surfacing for any team replicating the pattern.
 
-### Verified
+#### Repository plumbing
+- CI on every push and PR, matrix on Python 3.11 / 3.12 / 3.13 / 3.14.
+  Steps: pylint, pyright strict, pytest, the conformance probe suite,
+  and every bundled example.
+- PyPI trusted-publish workflow on `v*` tags.
+- Dependabot for GitHub Actions and pip.
+- PR template + bug-report and feature-request issue forms.
+
+### Verified at tag time
 - 2315 unit tests passing across the Python package.
 - 22 / 22 conformance probes passing against the reference implementation.
-- Pyright strict: 0 errors, 0 warnings, 0 informations on the production surface.
-- Pylint: 10.00/10 across the production surface and the test suite.
-- All six bundled examples run to completion with exit 0.
-- CI matrix passing on Python 3.11, 3.12, 3.13, 3.14.
-- Federal-procurement test: zero references to internal System9 documents,
-  internal subsystem names, or `infinity-code`/`.claude/` paths anywhere in
-  source or test files.
+- Pyright strict: 0 errors, 0 warnings, 0 informations on the
+  production surface.
+- Pylint: 10.00 / 10 across the production surface and the test suite.
+- All six bundled examples run to completion with exit code 0.
+- CI matrix passing on Python 3.11, 3.12, 3.13, 3.14 including the
+  conformance and examples steps.
+- Federal-procurement test: zero references to internal System9
+  documents, internal subsystem names, or `infinity-code` / `.claude/`
+  paths anywhere in source or test files.
 
-[Unreleased]: https://github.com/System9ai/substrate-alignment/commits/main
+[Unreleased]: https://github.com/System9ai/substrate-alignment/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/System9ai/substrate-alignment/releases/tag/v0.1.0

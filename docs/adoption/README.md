@@ -5,15 +5,12 @@ Concrete integration recipes for common Python frameworks. Each guide is self-co
 | Guide | Primitive | Framework |
 | --- | --- | --- |
 | [`fastapi-permission-gate.md`](fastapi-permission-gate.md) | `NetPotentialGainGate` | FastAPI permission endpoints |
-| [`redis-rate-limiter.md`](redis-rate-limiter.md) | `ResistanceBand` + threshold helpers | Redis-backed token-bucket rate limiter |
+| [`django-permission-gate.md`](django-permission-gate.md) | `NetPotentialGainGate` | Django CBV + DRF permission class |
 | [`celery-task-gate.md`](celery-task-gate.md) | `NetPotentialGainGate` | Celery worker task decorator |
+| [`temporal-workflow-halt.md`](temporal-workflow-halt.md) | `HaltAndEscalateProtocol` | Temporal workflow with signal-driven resume |
+| [`redis-rate-limiter.md`](redis-rate-limiter.md) | `ResistanceBand` + threshold helpers | Redis-backed token-bucket rate limiter |
 | [`sqlalchemy-metadata-store.md`](sqlalchemy-metadata-store.md) | `SubstrateMetadataStore` Protocol | SQLAlchemy 2.x ORM model + upsert |
-
-Coming with later releases:
-
-- `temporal-workflow-halt.md` — wire the halt-and-escalate protocol into a Temporal workflow.
-- `audit-chain-postgres.md` — back the substrate-trace ledger with a Postgres table; peer-witness signing across services.
-- `django-permission-gate.md` — the Django equivalent of the FastAPI recipe.
+| [`audit-chain-postgres.md`](audit-chain-postgres.md) | `SubstrateTraceLedger` | Postgres-backed audit chain + peer-witness |
 
 ## Pattern
 
