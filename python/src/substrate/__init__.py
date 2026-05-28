@@ -28,6 +28,25 @@ from substrate.alignment_refresher import (
     ALIGNMENT_COMPONENTS,
     AlignmentRefresher,
 )
+from substrate.evidence_grade.composer import (
+    EVIDENCE_GRADES,
+    EvidenceAttestation,
+    EvidenceComposition,
+    EvidenceGrade,
+    EvidenceGradeConfig,
+    SubstrateStateClaim,
+    compose_evidence_grade,
+)
+from substrate.multi_scale.scope_registry import (
+    CELL_SCOPE,
+    DEFAULT_SCOPES,
+    NODE_SCOPE,
+    ORG_SCOPE,
+    ConcreteScope,
+    ScopeRegistry,
+    SubstrateScope,
+    default_registry,
+)
 from substrate.net_potential_gain_gate import (
     ACTION_KIND_HEURISTICS,
     DEFAULT_POSITIVE_THRESHOLD,
@@ -87,6 +106,23 @@ __all__ = [
     # Alignment refresher
     "ALIGNMENT_COMPONENTS",
     "AlignmentRefresher",
+    # Evidence-grade ladder (spec v0.2.0)
+    "EVIDENCE_GRADES",
+    "EvidenceAttestation",
+    "EvidenceComposition",
+    "EvidenceGrade",
+    "EvidenceGradeConfig",
+    "SubstrateStateClaim",
+    "compose_evidence_grade",
+    # Multi-scale scope registry (spec v0.3.0)
+    "CELL_SCOPE",
+    "ConcreteScope",
+    "DEFAULT_SCOPES",
+    "NODE_SCOPE",
+    "ORG_SCOPE",
+    "ScopeRegistry",
+    "SubstrateScope",
+    "default_registry",
     # NPG gate
     "ACTION_KIND_HEURISTICS",
     "DEFAULT_POSITIVE_THRESHOLD",

@@ -18,6 +18,15 @@ from substrate.alignment_computer import (
 from substrate.audit.substrate_trace import SubstrateTraceLedger
 from substrate.conformance._errors import ProbeFailure
 from substrate.drift.drift_pattern_matcher import DriftPatternMatcher
+from substrate.evidence_grade.composer import (
+    EvidenceAttestation,
+    EvidenceGrade,
+    compose_evidence_grade,
+)
+from substrate.multi_scale.scope_registry import (
+    ConcreteScope,
+    ScopeRegistry,
+)
 from substrate.halt.halt_escalate_protocol import (
     HaltAndEscalateProtocol,
     HaltObservation,
@@ -403,3 +412,174 @@ def handle_drift_signals(probe: Mapping[str, Any]) -> None:
             not report.detections,
             f"expected no detections; got {len(report.detections)}",
         )
+
+
+# ---------------------------------------------------------------------------
+# evidence-grade
+# ---------------------------------------------------------------------------
+
+
+def handle_evidence_grade(probe: Mapping[str, Any]) -> None:
+    """Dispatch on ``input.fn`` for the evidence-grade composer."""
+    inp = probe["input"]
+    expected = probe["expected"]
+    fn = inp.get("fn")
+    if fn != "compose_evidence_grade":
+        raise ProbeFailure(f"unknown evidence-grade fn: {fn!r}")
+    attestations = tuple(
+        EvidenceAttestation(
+            source_id=str(row["source_id"]),
+            observed_at_epoch_seconds=float(
+                row["observed_at_epoch_seconds"]
+            ),
+            provenance_verified=bool(row["provenance_verified"]),
+        )
+        for row in inp.get("attestations", [])
+    )
+    result = compose_evidence_grade(
+        attestations,
+        now_epoch_seconds=float(inp["now_epoch_seconds"]),
+    )
+    if "grade" in expected:
+        want = EvidenceGrade(str(expected["grade"]))
+        _require(
+            result.grade is want,
+            f"grade: expected {want.value}, got {result.grade.value}",
+        )
+    if "attestation_count" in expected:
+        _require(
+            result.attestation_count == int(expected["attestation_count"]),
+            f"attestation_count: expected {expected['attestation_count']}, "
+            f"got {result.attestation_count}",
+        )
+    if "unique_source_count" in expected:
+        _require(
+            result.unique_source_count
+            == int(expected["unique_source_count"]),
+            f"unique_source_count: expected "
+            f"{expected['unique_source_count']}, "
+            f"got {result.unique_source_count}",
+        )
+    if "provenance_verified_count" in expected:
+        _require(
+            result.provenance_verified_count
+            == int(expected["provenance_verified_count"]),
+            f"provenance_verified_count: expected "
+            f"{expected['provenance_verified_count']}, "
+            f"got {result.provenance_verified_count}",
+        )
+
+
+# ---------------------------------------------------------------------------
+# multi-scale
+# ---------------------------------------------------------------------------
+
+
+def handle_multi_scale(probe: Mapping[str, Any]) -> None:
+    """Dispatch on ``input.fn`` for the scope-registry primitive."""
+    inp = probe["input"]
+    expected = probe["expected"]
+    fn = inp.get("fn")
+    if fn == "assert_default_triple":
+        registry = ScopeRegistry()
+        names = list(registry.names())
+        expected_names = list(expected.get("scope_names", []))
+        _require(
+            names == expected_names,
+            f"scope_names: expected {expected_names}, got {names}",
+        )
+        cell = registry.get("cell")
+        node = registry.get("node")
+        org = registry.get("org")
+        _require(
+            cell.parent_name == expected.get("cell_parent"),
+            f"cell_parent: expected {expected.get('cell_parent')!r}, "
+            f"got {cell.parent_name!r}",
+        )
+        _require(
+            node.parent_name == expected.get("node_parent"),
+            f"node_parent: expected {expected.get('node_parent')!r}, "
+            f"got {node.parent_name!r}",
+        )
+        _require(
+            org.parent_name == expected.get("org_parent"),
+            f"org_parent: expected {expected.get('org_parent')!r}, "
+            f"got {org.parent_name!r}",
+        )
+        _require(
+            cell.aggregating == bool(expected.get("cell_aggregating", False)),
+            "cell.aggregating mismatch",
+        )
+        _require(
+            node.aggregating == bool(expected.get("node_aggregating", True)),
+            "node.aggregating mismatch",
+        )
+        _require(
+            org.aggregating == bool(expected.get("org_aggregating", True)),
+            "org.aggregating mismatch",
+        )
+    elif fn == "register_and_walk":
+        registry = ScopeRegistry()
+        scope_data = inp["scope"]
+        new_scope = ConcreteScope(
+            name=str(scope_data["name"]),
+            display_name=str(scope_data["display_name"]),
+            parent_name=(
+                None
+                if scope_data.get("parent_name") in (None, "")
+                else str(scope_data["parent_name"])
+            ),
+            aggregating=bool(scope_data["aggregating"]),
+        )
+        registry.register(new_scope)
+        observed_chain = list(registry.parents_of(new_scope.name))
+        expected_chain = list(
+            expected.get("parent_chain_of_new_scope", [])
+        )
+        _require(
+            observed_chain == expected_chain,
+            f"parent_chain_of_new_scope: expected {expected_chain}, "
+            f"got {observed_chain}",
+        )
+        observed_names = sorted(registry.names())
+        expected_registry_contents = sorted(
+            expected.get("registry_contains", [])
+        )
+        _require(
+            observed_names == expected_registry_contents,
+            "registry_contains: expected "
+            f"{expected_registry_contents}, got {observed_names}",
+        )
+    elif fn == "assert_cycle_rejected":
+        registry = ScopeRegistry()
+        scope_data = inp["scope"]
+        new_scope = ConcreteScope(
+            name=str(scope_data["name"]),
+            display_name=str(scope_data["display_name"]),
+            parent_name=(
+                None
+                if scope_data.get("parent_name") in (None, "")
+                else str(scope_data["parent_name"])
+            ),
+            aggregating=bool(scope_data["aggregating"]),
+        )
+        try:
+            registry.register(new_scope)
+            raised = False
+        except ValueError:
+            raised = True
+        _require(
+            raised == bool(expected.get("raises", True)),
+            f"raises: expected {expected.get('raises')!r}, got {raised!r}",
+        )
+        observed_names = sorted(registry.names())
+        expected_registry_contents = sorted(
+            expected.get("registry_contains", [])
+        )
+        _require(
+            observed_names == expected_registry_contents,
+            "registry_contains: expected "
+            f"{expected_registry_contents}, got {observed_names}",
+        )
+    else:
+        raise ProbeFailure(f"unknown multi-scale fn: {fn!r}")

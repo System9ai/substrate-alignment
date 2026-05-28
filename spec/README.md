@@ -14,6 +14,8 @@ The Python package under [`../python/`](../python/) is the *reference* implement
 | [`drift-signals.md`](drift-signals.md) | Seven drift patterns, severity ordering, aggregation semantics |
 | [`runaway-power-prevention.md`](runaway-power-prevention.md) | The six mechanisms that close known power-accumulation loopholes |
 | [`four-options-matrix.md`](four-options-matrix.md) | Adversary-reasoning matrix: horizon × payoff × honesty × cooperation |
+| [`evidence-grade.md`](evidence-grade.md) | Four-step evidence-grade ladder for substrate-state claims (v0.2.0-draft) |
+| [`multi-scale.md`](multi-scale.md) | Pluggable `SubstrateScope` registry — defaults CELL/NODE/ORG (v0.3.0-draft) |
 
 ## Conventions
 

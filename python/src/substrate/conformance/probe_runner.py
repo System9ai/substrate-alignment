@@ -160,6 +160,8 @@ def default_handlers() -> Mapping[str, _Handler]:
         "npg-gate-protocol": _handlers.handle_npg_gate_protocol,
         "runaway-power-prevention": _handlers.handle_runaway_power_prevention,
         "drift-signals": _handlers.handle_drift_signals,
+        "evidence-grade": _handlers.handle_evidence_grade,
+        "multi-scale": _handlers.handle_multi_scale,
         "four-options-matrix": _handlers.handle_four_options_matrix,
     }
 

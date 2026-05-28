@@ -1,0 +1,26 @@
+spec: evidence-grade
+spec_version: ">=0.2"
+scenario: cryptographically-attested
+required: true
+metadata:
+  rationale: >
+    At least one attestation with verified provenance and fewer than
+    three unique sources MUST classify as ATTESTED (spec § 3 step 6
+    rule b).
+
+input:
+  fn: compose_evidence_grade
+  now_epoch_seconds: 1700000000
+  attestations:
+    - source_id: source-1
+      observed_at_epoch_seconds: 1700000000
+      provenance_verified: true
+    - source_id: source-2
+      observed_at_epoch_seconds: 1700000000
+      provenance_verified: false
+
+expected:
+  grade: attested
+  attestation_count: 2
+  unique_source_count: 2
+  provenance_verified_count: 1

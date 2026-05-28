@@ -7,9 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Future v0.2.0 candidate items will be tracked here. See
+### Added (v0.2.0 candidate)
+
+- **Evidence-grade Protocol** ([`spec/evidence-grade.md`](spec/evidence-grade.md))
+  — four-step ladder `UNVERIFIED_HEARSAY < CORROBORATED < ATTESTED <
+  DOCUMENTED_CRYSTALLIZED` for grading substrate-state claims by
+  evidentiary strength. Includes `EvidenceAttestation`,
+  `EvidenceComposition`, `EvidenceGradeConfig`, and the
+  `SubstrateStateClaim` runtime-checkable Protocol that host
+  applications implement on their canonical-state records (MNEMOSYNE,
+  ARGUS, project-specific stores).
+- Reference impl at
+  [`python/src/substrate/evidence_grade/`](python/src/substrate/evidence_grade/):
+  pure-logic `compose_evidence_grade()` with deterministic rule
+  ordering and decay downgrade (7-day half-life × 2 default).
+- 5 conformance probes covering single-source / corroborated /
+  attested / documented-crystallized / decay-downgrade scenarios. All
+  pass against the Python reference.
+- 28 reference-impl unit tests pin every clause of `spec/evidence-grade.md`
+  § 3, lifting the suite from 2315 → 2343 tests.
+
+### Added (v0.3.0 candidate)
+
+- **Multi-scale observation Protocol** ([`spec/multi-scale.md`](spec/multi-scale.md))
+  — pluggable `SubstrateScope` Protocol with default `cell` / `node`
+  / `org` triple + operator-extensible registry. Hyphenated package
+  `substrate.multi_scale` complements the existing single-word
+  `substrate.multiscale.aggregator`; the registry's default names
+  align with the aggregator's hard-coded enum so the two compose.
+- Reference impl at
+  [`python/src/substrate/multi_scale/`](python/src/substrate/multi_scale/):
+  `ScopeRegistry` enforces unique names, registered-parent constraint,
+  and cycle prevention at registration time. `parents_of()` returns
+  the upward chain; `default_registry()` returns a fresh registry
+  pre-populated with the canonical triple.
+- 3 conformance probes covering default-triple-present, pluggable-
+  extension, and cycle-rejected scenarios. All pass against the
+  Python reference.
+- 23 reference-impl unit tests pin every spec § 2/§ 3 clause,
+  lifting the suite (further; see test count in CHANGELOG below).
+
+Other v0.2.0 / v0.3.0 candidate items will be tracked here. See
 [`docs/preprint/`](docs/preprint/) for the in-flight preprint that ships
-alongside the v0.2.0 tag.
+alongside the next tag.
 
 ## [0.1.0] — pending tag
 
