@@ -157,6 +157,7 @@ def default_handlers() -> Mapping[str, _Handler]:
 
     return {
         "operating-mode": _handlers.handle_operating_mode,
+        "reflex-restraint": _handlers.handle_reflex_restraint,
         "npg-gate-protocol": _handlers.handle_npg_gate_protocol,
         "runaway-power-prevention": _handlers.handle_runaway_power_prevention,
         "drift-signals": _handlers.handle_drift_signals,

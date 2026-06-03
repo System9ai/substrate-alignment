@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added (v0.2.0 candidate)
 
+- **Reflex-vs-restraint gate** ([`spec/reflex-restraint.md`](spec/reflex-restraint.md))
+  — the fight-or-flight-vs-deliberate-restraint decision primitive. A
+  pure, total, deterministic gate returning one of five verdicts
+  (`ACT_REACTIVE`, `RESTRAIN`, `DE_ESCALATE`, `REFUSE_HARD_LIMIT`,
+  `INSUFFICIENT_DATA`): the fast survival reflex is substrate-aligned
+  only at a genuine survival-level threat; a non-survival provocation
+  whose reactive action is net-negative de-escalates or restrains; a
+  hard limit refuses regardless. Composes the `npg-gate-protocol`
+  verdict as input. Reference impl at
+  [`substrate.offense.reflex_restraint_gate`](python/src/substrate/offense/reflex_restraint_gate.py),
+  with the [`OffenseResponseOrchestrator`](python/src/substrate/offense/response_orchestrator.py)
+  sequencing it ahead of the deliberate offense-handling path. Five
+  `reflex-restraint__*` conformance probes.
 - **Evidence-grade Protocol** ([`spec/evidence-grade.md`](spec/evidence-grade.md))
   — four-step ladder `UNVERIFIED_HEARSAY < CORROBORATED < ATTESTED <
   DOCUMENTED_CRYSTALLIZED` for grading substrate-state claims by

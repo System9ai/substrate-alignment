@@ -1,0 +1,24 @@
+spec: reflex-restraint
+spec_version: ">=0.1"
+scenario: provocation-net-negative-de-escalates
+required: true
+metadata:
+  rationale: >
+    A non-survival provocation whose reactive action is net-negative,
+    with a live counterparty, must de-escalate — reduce the conflict
+    gradient rather than fight (fighting that lowers net potential is
+    short-cycle; de-escalation is the efficiency move).
+
+input:
+  fn: evaluate
+  appraisal:
+    actor_entity_id: alice
+    threat_id: t-3
+    survival_threat_score: 0.2
+    reactive_action_kind: retaliate
+    reactive_action_npg: net_negative
+    crosses_hard_limit: false
+    has_live_counterparty: true
+
+expected:
+  verdict: de_escalate

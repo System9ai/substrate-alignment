@@ -37,6 +37,13 @@ from substrate.net_potential_gain_gate import (
     DefaultNetPotentialGainGate,
     NetPotentialGainVerdict,
 )
+from substrate.offense.reflex_restraint_gate import (
+    RESTRAINT_VERDICTS,
+    ReflexRestraintGate,
+    RestraintGateConfig,
+    RestraintVerdict,
+    ThreatAppraisal,
+)
 from substrate.pair_coupling.state_machine import (
     IllegalStateTransition,
     PairCouplingState,
@@ -105,6 +112,53 @@ def handle_operating_mode(probe: Mapping[str, Any]) -> None:
         )
     else:
         raise ProbeFailure(f"unknown operating-mode fn: {fn!r}")
+
+
+# ---------------------------------------------------------------------------
+# reflex-restraint
+# ---------------------------------------------------------------------------
+
+
+def handle_reflex_restraint(probe: Mapping[str, Any]) -> None:
+    """Dispatch on ``input.fn`` for the reflex-vs-restraint gate."""
+    inp = probe["input"]
+    expected = probe["expected"]
+    fn = inp.get("fn")
+    if fn == "enum_values":
+        want = {str(v) for v in expected["verdicts"]}
+        _require(
+            set(RESTRAINT_VERDICTS) == want,
+            f"verdicts: expected {sorted(want)}, "
+            f"got {sorted(RESTRAINT_VERDICTS)}",
+        )
+        return
+    if fn == "evaluate":
+        cfg = (
+            RestraintGateConfig(**inp["config"])
+            if inp.get("config")
+            else RestraintGateConfig()
+        )
+        gate = ReflexRestraintGate(config=cfg)
+        a = inp["appraisal"]
+        appraisal = ThreatAppraisal(
+            actor_entity_id=str(a["actor_entity_id"]),
+            threat_id=str(a["threat_id"]),
+            survival_threat_score=float(a["survival_threat_score"]),
+            reactive_action_kind=str(a["reactive_action_kind"]),
+            reactive_action_npg=NetPotentialGainVerdict(
+                a["reactive_action_npg"]
+            ),
+            crosses_hard_limit=bool(a.get("crosses_hard_limit", False)),
+            has_live_counterparty=bool(a.get("has_live_counterparty", True)),
+        )
+        decision = gate.evaluate(appraisal)
+        _require(
+            decision.verdict is RestraintVerdict(expected["verdict"]),
+            f"verdict: expected {expected['verdict']}, "
+            f"got {decision.verdict.value}",
+        )
+        return
+    raise ProbeFailure(f"unknown reflex-restraint fn: {fn!r}")
 
 
 # ---------------------------------------------------------------------------
