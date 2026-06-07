@@ -76,7 +76,53 @@ The default lower bound is `1/3` and the default upper bound is `1/φ²` (≈ `0
 
 Rate limits, batch sizes, retry caps, ring sizes, queue depths, and other thresholds in the host application SHOULD be derived from this band rather than from ad-hoc multipliers. The package provides helper functions for the common cases.
 
-**Closes the loophole:** sustained operation past the system's healthy capacity envelope.
+### 4.1 Layered zones (v0.2)
+
+The three-state classifier governs RESISTANCE-type quantities (imposed challenge). For WORK-type quantities (load carried), a conforming implementation MUST additionally provide the five-valued layered-zone classification:
+
+| Zone | Range | Semantics |
+|---|---|---|
+| `UNDER_LOADED` | `< 1/3` | Rest zone; legitimate for recovery. |
+| `CALIBRATION` | `[1/3, 1/φ²]` | Work-entry threshold; the resistance setpoint. |
+| `WORKING` | `(1/φ², 0.5]` | Genuinely productive sustained work. A work-zone utilisation is NOT an alarm state. |
+| `PEAKING` | `(0.5, 1/φ]` | Tolerable sporadically; a turnaround is expected; MUST NOT be sustained. |
+| `DEBT` | `> 1/φ` | Sustained operation accrues compensation debt. |
+
+The work-zone ceiling (`0.5`) and the φ-conjugate debt line (`1/φ ≈ 0.618`, the fraction of capacity an entity maintains for itself) are substrate anchors and MUST NOT be tunable looser. The legacy three-state classifier remains valid; `WORKING`/`PEAKING`/`DEBT` project onto `STRESSED`.
+
+### 4.2 Sustained debt and compensation (v0.2)
+
+A conforming implementation MUST distinguish sporadic excursions from sustained operation (temporal tracking), and MUST accrue **compensation-debt units** (breach magnitude × duration) when operation above the φ-conjugate is sustained. An alarm or classification alone is non-conforming: the implementation MUST expose a compensation path that can repay accrued debt — in preference order: peer pickup (transfer load to peers with work-zone headroom, never pushing a carrier past the φ-conjugate — pickup that creates new debt is contagion, not compensation), recovery window, capacity grant (φ-stepped growth), human escalation. Refusing to compensate is itself a drift signal (mechanism 6 feed). Pickup reciprocity SHOULD be recorded so chronic-debtor and free-rider asymmetries surface to drift detection.
+
+### 4.3 Maintain targets and growth steps (v0.2)
+
+For fungible, transferable resources operated in maintain mode, the steady-state utilisation target SHOULD be group-size-aware: `u* = min(0.5, (1/φ) · (N−1)/N)` for a peer group of size `N`, so that one peer's failure never pushes a survivor past the debt line. Capacity growth SHOULD step at most φ (≈ 1.618×) per step with consolidation between steps; implementations MUST be able to flag steps exceeding the φ ratio and consecutive growth without consolidation (runaway growth — a mechanism-6 drift signal).
+
+**Closes the loophole:** sustained operation past the system's healthy capacity envelope — and (v0.2) silent debt accumulation without compensation, and runaway capacity growth.
+
+### 4.4 Governed ascent — greedy optimization loops (v0.2)
+
+Iterative greedy optimization (hill climbing — a loop in which each step is taken because it
+improves an objective) is governed under this mechanism, not exempt from it. A conforming
+implementation that exposes a greedy-ascent loop:
+
+- MUST certify the climb **objective** as aligned before the loop is entered (the summit, not the
+  steps). An objective the certifier cannot score MUST NOT be climbed greedily — fail closed.
+- SHOULD evaluate **each step** through the net-potential-gain gate (mechanism 1); a step scored
+  net-negative MUST be refused, and a step that cannot be scored MUST stop the climb.
+- MUST pace climb effort by the layered zones (§4.1): consecutive excursions past the work-zone
+  ceiling beyond a small sporadic budget MUST terminate the climb, and sustained operation past
+  the φ-conjugate MUST terminate it (§4.2 debt semantics apply).
+- MUST treat capacity growth inside a climb as growth steps (§4.3): consecutive growth without
+  consolidation MUST terminate the climb as runaway.
+- MUST terminate every climb with an explicit verdict and MUST emit a consolidation event on
+  every exit path — there are no unterminated climbs. Climb-as-default-mode (always climbing,
+  never consolidating) is the mechanism-6 signature in algorithmic form.
+- MUST NOT treat a rising per-step gain series as a runaway signal — rising gain is the purpose
+  of a climb; growth-without-consolidation is the runaway signature.
+
+**Closes the loophole:** unbounded greedy optimization — an agent diligently climbing an
+uncertified or extractive objective, or climbing a certified one past its capacity envelope.
 
 ## 5. Pair-coupling integrity
 

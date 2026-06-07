@@ -1,0 +1,26 @@
+spec: runaway-power-prevention
+spec_version: ">=0.2"
+scenario: mech-6__ascent-runaway-detected
+required: true
+metadata:
+  mechanism: 6
+  rationale: >
+    Governed ascent. A climb whose every step grows capacity without
+    consolidation between grow steps exhibits the runaway-growth
+    signature (mechanism 6) and MUST terminate as RUNAWAY. Rising
+    per-step gain is NOT the runaway signal — growth-without-
+    consolidation is.
+
+input:
+  mechanism: governed-ascent
+  objective_certified: true
+  steps:
+    - {verdict: net_positive, score: 0.2, grows_capacity: true}
+    - {verdict: net_positive, score: 0.2, grows_capacity: true}
+    - {verdict: net_positive, score: 0.2, grows_capacity: true}
+  utilization_sequence: [0.45, 0.45, 0.45]
+
+expected:
+  termination: runaway
+  step_count: 2
+  consolidated: true

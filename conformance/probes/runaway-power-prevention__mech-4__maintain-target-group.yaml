@@ -1,0 +1,20 @@
+spec: runaway-power-prevention
+spec_version: ">=0.2"
+scenario: mech-4__maintain-target-group
+required: true
+metadata:
+  mechanism: 4
+  rationale: >
+    Layered zone model §maintain-target. The maintain-mode target for fungible
+    transferable resources is group-size-aware, derived from the debt
+    line + peer-pickup math: u* = min(0.5, (1/φ)·(N−1)/N), so one
+    peer's failure never pushes a survivor past the φ-conjugate. For
+    N=4 the target is 1/φ × 3/4 ≈ 0.463525.
+
+input:
+  mechanism: maintain-target
+  group_size: 4
+
+expected:
+  target: 0.463525
+  survivor_at_or_under_debt_line: true

@@ -1,0 +1,25 @@
+spec: runaway-power-prevention
+spec_version: ">=0.2"
+scenario: mech-6__ascent-terminates-and-consolidates
+required: true
+metadata:
+  mechanism: 6
+  rationale: >
+    Governed ascent. A healthy climb in the work zone converges when the
+    generator has no further proposal, and EVERY exit path emits exactly
+    one consolidation event — there are no unterminated climbs by
+    construction.
+
+input:
+  mechanism: governed-ascent
+  objective_certified: true
+  steps:
+    - {verdict: net_positive, score: 0.2}
+    - {verdict: net_positive, score: 0.2}
+    - {verdict: net_positive, score: 0.2}
+  utilization_sequence: [0.45, 0.45, 0.45]
+
+expected:
+  termination: converged
+  step_count: 3
+  consolidated: true

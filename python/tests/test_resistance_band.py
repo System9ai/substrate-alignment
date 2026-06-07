@@ -329,3 +329,153 @@ def test_assessment_shape_constructable() -> None:
     assert ev.is_productive
     assert not ev.is_stressed
     assert not ev.is_under_loaded
+class TestLayeredZones:
+    """Layered zone model (2026-06-05): five-valued layered-zone classification."""
+
+    def test_zone_boundaries(self) -> None:
+        from substrate.resistance_band import (  # noqa: PLC0415
+            PHI_CONJUGATE,
+            ZoneClassification,
+            classify_zone,
+        )
+
+        assert classify_zone(0.20) is ZoneClassification.UNDER_LOADED
+        assert classify_zone(0.35) is ZoneClassification.CALIBRATION
+        # The work zone: 0.45 is healthy productive work, NOT stress.
+        assert classify_zone(0.45) is ZoneClassification.WORKING
+        assert classify_zone(0.50) is ZoneClassification.WORKING
+        assert classify_zone(0.55) is ZoneClassification.PEAKING
+        assert classify_zone(PHI_CONJUGATE) is ZoneClassification.PEAKING
+        assert classify_zone(0.70) is ZoneClassification.DEBT
+
+    def test_zone_to_legacy_projection(self) -> None:
+        from substrate.resistance_band import (  # noqa: PLC0415
+            ResistanceBandClassification,
+            ZoneClassification,
+            zone_to_legacy,
+        )
+
+        assert (
+            zone_to_legacy(ZoneClassification.CALIBRATION)
+            is ResistanceBandClassification.PRODUCTIVE
+        )
+        for zone in (
+            ZoneClassification.WORKING,
+            ZoneClassification.PEAKING,
+            ZoneClassification.DEBT,
+        ):
+            assert (
+                zone_to_legacy(zone)
+                is ResistanceBandClassification.STRESSED
+            )
+
+    def test_legacy_classify_unchanged(self) -> None:
+        """The 3-state API is untouched — serialized consumers safe."""
+        from substrate.resistance_band import (  # noqa: PLC0415
+            ResistanceBandClassification,
+            classify,
+        )
+
+        assert classify(0.45) is ResistanceBandClassification.STRESSED
+
+    def test_phi_conjugate_identity(self) -> None:
+        from substrate.resistance_band import (  # noqa: PLC0415
+            PHI,
+            PHI_CONJUGATE,
+        )
+
+        assert PHI_CONJUGATE == 1.0 / PHI
+        assert abs(PHI_CONJUGATE - (PHI - 1.0)) < 1e-12
+
+
+class TestMaintainTarget:
+    """Layered zone model §2.4b: group-size-aware maintain target."""
+
+    def test_formula_values(self) -> None:
+        import pytest  # noqa: PLC0415
+
+        from substrate.resistance_band import (  # noqa: PLC0415
+            PHI_CONJUGATE,
+            maintain_target,
+        )
+
+        assert maintain_target(2) == pytest.approx(PHI_CONJUGATE / 2)
+        assert maintain_target(3) == pytest.approx(PHI_CONJUGATE * 2 / 3)
+        assert maintain_target(4) == pytest.approx(PHI_CONJUGATE * 3 / 4)
+        # Large groups cap at the work-zone ceiling (the 0.5 line).
+        assert maintain_target(6) == 0.5
+        assert maintain_target(100) == 0.5
+
+    def test_survivor_stays_at_or_under_debt_line(self) -> None:
+        """The defining property: peer failure never pushes a survivor
+        past the φ-conjugate."""
+        from substrate.resistance_band import (  # noqa: PLC0415
+            PHI_CONJUGATE,
+            maintain_target,
+        )
+
+        for group_size in range(2, 20):
+            u = maintain_target(group_size)
+            survivor = u + u / (group_size - 1)
+            assert survivor <= PHI_CONJUGATE + 1e-9, (group_size, survivor)
+
+    def test_singleton_falls_back_to_calibration_target(self) -> None:
+        from substrate.resistance_band import (  # noqa: PLC0415
+            TARGET,
+            maintain_target,
+        )
+
+        assert maintain_target(1) == TARGET
+
+    def test_validation(self) -> None:
+        import pytest  # noqa: PLC0415
+
+        from substrate.resistance_band import (  # noqa: PLC0415
+            maintain_target,
+        )
+
+        with pytest.raises(ValueError):
+            maintain_target(0)
+        with pytest.raises(ValueError):
+            maintain_target(4, ceiling=0.9, debt_line=0.6)
+
+
+class TestGrowthStep:
+    """Layered zone model: φ-proportioned growth-step discipline."""
+
+    def test_phi_step_is_within(self) -> None:
+        from substrate.resistance_band import (  # noqa: PLC0415
+            PHI,
+            assess_growth_step,
+        )
+
+        out = assess_growth_step(100.0, 100.0 * PHI)
+        assert out.within_phi
+
+    def test_doubling_topples(self) -> None:
+        from substrate.resistance_band import (  # noqa: PLC0415
+            assess_growth_step,
+        )
+
+        out = assess_growth_step(100.0, 250.0)
+        assert not out.within_phi
+        assert "topple" in out.reasoning
+
+    def test_shrink_is_not_growth(self) -> None:
+        from substrate.resistance_band import (  # noqa: PLC0415
+            assess_growth_step,
+        )
+
+        assert assess_growth_step(100.0, 80.0).within_phi
+
+    def test_validation(self) -> None:
+        import pytest  # noqa: PLC0415
+
+        from substrate.resistance_band import (  # noqa: PLC0415
+            assess_growth_step,
+        )
+
+        with pytest.raises(ValueError):
+            assess_growth_step(0.0, 100.0)
+        with pytest.raises(ValueError):
+            assess_growth_step(100.0, 150.0, max_ratio=1.0)

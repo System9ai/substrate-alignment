@@ -1,0 +1,23 @@
+spec: runaway-power-prevention
+spec_version: ">=0.2"
+scenario: mech-6__ascent-stops-net-negative-step
+required: true
+metadata:
+  mechanism: 6
+  rationale: >
+    Governed ascent. Each climb step is a net-potential-gain evaluation;
+    a step the gate scores NET_NEGATIVE is refused and the climb stops —
+    prior accepted steps are preserved, the negative step is never taken.
+
+input:
+  mechanism: governed-ascent
+  objective_certified: true
+  steps:
+    - {verdict: net_positive, score: 0.2}
+    - {verdict: net_negative, score: -0.3}
+  utilization_sequence: [0.45, 0.45]
+
+expected:
+  termination: net_negative
+  step_count: 1
+  consolidated: true

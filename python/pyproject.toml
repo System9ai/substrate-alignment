@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "substrate-alignment"
-version = "0.1.0.dev0"
+version = "0.2.0.dev0"
 description = "Reference Python implementation of the substrate-alignment open standard for multi-entity agent systems."
 readme = "README.md"
 requires-python = ">=3.11"

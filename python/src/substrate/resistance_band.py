@@ -59,8 +59,32 @@ LOWER_BOUND: Final[float] = 1.0 / 3.0
 UPPER_BOUND: Final[float] = 1.0 / PHI_SQUARED
 
 #: Midpoint of the default productive band — the target utilisation for
-#: closed-loop control. Approximately ``0.357566``.
+#: closed-loop control of RESISTANCE-type quantities. Approximately
+#: ``0.357566``. For WORK-type quantities with peer pickup, prefer
+#: :func:`maintain_target`.
 TARGET: Final[float] = (LOWER_BOUND + UPPER_BOUND) / 2.0
+
+#: The φ-conjugate — ``1/φ = φ - 1 ≈ 0.6180``: the fraction of capacity
+#: an entity maintains for itself, and equivalently the **debt line**.
+#: Sustained operation above it accrues compensation debt that peers
+#: must pick up (see ``substrate/debt_pickup.py`` and
+#: ``docs/concepts/resistance-band.md`` § "The layered zone model").
+PHI_CONJUGATE: Final[float] = 1.0 / PHI
+
+#: Vocabulary alias for :data:`PHI_CONJUGATE` — "the ~62% an entity is
+#: trying to maintain".
+MAINTAINED_CAPACITY: Final[float] = PHI_CONJUGATE
+
+#: The work-zone ceiling — the 0.5 line. Work in ``(1/φ², 0.5]`` is
+#: genuinely productive sustained effort ("in the zone but not rising
+#: too fast"); past the line a turnaround is expected (PEAKING) and the
+#: excursion is tolerable only sporadically.
+WORK_ZONE_UPPER: Final[float] = 0.5
+
+#: φ-proportioned growth-step ratio ("domino chain"): capacity raises
+#: by at most ~1.618x per step with consolidation between steps.
+#: Faster sustained growth builds no foundation and topples.
+GROWTH_STEP_RATIO: Final[float] = PHI
 
 class ResistanceBandClassification(str, Enum):
     """Three-valued band classification.
@@ -78,6 +102,59 @@ class ResistanceBandClassification(str, Enum):
 RESISTANCE_BAND_CLASSIFICATIONS: Final[frozenset[str]] = frozenset(
     c.value for c in ResistanceBandClassification
 )
+
+
+class ZoneClassification(str, Enum):
+    """Five-valued layered-zone classification.
+
+    The legacy three-state model mislabels the work zone as STRESSED
+    for WORK-type quantities; this enum carries the layered capacity
+    model (spec ``runaway-power-prevention.md`` §4):
+
+    - UNDER_LOADED ``< 1/3`` — the rest zone; legitimate for recovery.
+    - CALIBRATION ``[1/3, 1/φ²]`` — work-entry threshold and the
+      imposed-resistance setpoint (the legacy PRODUCTIVE band).
+    - WORKING ``(1/φ², 0.5]`` — genuinely productive sustained work.
+    - PEAKING ``(0.5, 1/φ]`` — sporadic-tolerable; turnaround expected.
+    - DEBT ``> 1/φ`` — sustained operation accrues compensation debt;
+      others pick up.
+    """
+
+    UNDER_LOADED = "under_loaded"
+    CALIBRATION = "calibration"
+    WORKING = "working"
+    PEAKING = "peaking"
+    DEBT = "debt"
+
+
+#: All zone classifications, lockstep with the enum.
+ZONE_CLASSIFICATIONS: Final[frozenset[str]] = frozenset(
+    z.value for z in ZoneClassification
+)
+
+
+_ZONE_TO_LEGACY: Final[dict["ZoneClassification", ResistanceBandClassification]] = {
+    ZoneClassification.UNDER_LOADED: ResistanceBandClassification.UNDER_LOADED,
+    ZoneClassification.CALIBRATION: ResistanceBandClassification.PRODUCTIVE,
+    ZoneClassification.WORKING: ResistanceBandClassification.STRESSED,
+    ZoneClassification.PEAKING: ResistanceBandClassification.STRESSED,
+    ZoneClassification.DEBT: ResistanceBandClassification.STRESSED,
+}
+
+
+class OperatingMode(str, Enum):
+    """Grow vs maintain — the mode dimension of the capacity contract.
+
+    MAINTAIN is the legitimate default steady state (no growth
+    pressure; cruise per :func:`maintain_target`). GROW is a
+    deliberate, gated transition — never a default: an entity that
+    always chooses grow without consolidation exhibits the
+    unbounded-growth pattern (runaway-power-prevention mechanism 6);
+    the streak detector lives in ``substrate/sustained_load.py``.
+    """
+
+    MAINTAIN = "maintain"
+    GROW = "grow"
 
 @dataclass(frozen=True, slots=True)
 class ResistanceBandConfig:
@@ -165,7 +242,12 @@ class ResistanceBandAssessment:
         """``True`` iff the classification is STRESSED."""
         return self.classification is ResistanceBandClassification.STRESSED
 
-def _validate_utilization(utilization: float) -> None:
+def validate_utilization(utilization: float) -> None:
+    """Reject a non-finite or out-of-range utilisation with ``ValueError``.
+
+    Public so sibling layered-model modules (``sustained_load``,
+    ``debt_pickup``) share one validation contract.
+    """
     if not math.isfinite(utilization):
         raise ValueError(
             f"utilization must be a finite float in [0.0, 1.0]; "
@@ -175,6 +257,138 @@ def _validate_utilization(utilization: float) -> None:
         raise ValueError(
             f"utilization must be in [0.0, 1.0]; got {utilization!r}"
         )
+
+
+#: Backwards-compatible private alias (pre-v2 internal call sites).
+_validate_utilization = validate_utilization
+
+
+def classify_zone(
+    utilization: float,
+    *,
+    config: Optional[ResistanceBandConfig] = None,
+) -> ZoneClassification:
+    """Return the five-valued layered-zone classification.
+
+    The calibration edges come from ``config`` (tighter-only, as with
+    :func:`classify`); the work-zone ceiling (0.5) and the φ-conjugate
+    debt line are substrate anchors and are not tunable. Boundaries:
+    calibration edges inclusive (matching :func:`classify`); the work
+    zone includes 0.5; DEBT is strictly above ``1/φ``.
+    """
+    validate_utilization(utilization)
+    cfg = config or DEFAULT_CONFIG
+    if utilization < cfg.lower_bound:
+        return ZoneClassification.UNDER_LOADED
+    if utilization <= cfg.upper_bound:
+        return ZoneClassification.CALIBRATION
+    if utilization <= WORK_ZONE_UPPER:
+        return ZoneClassification.WORKING
+    if utilization <= PHI_CONJUGATE:
+        return ZoneClassification.PEAKING
+    return ZoneClassification.DEBT
+
+
+def zone_to_legacy(zone: ZoneClassification) -> ResistanceBandClassification:
+    """Project a layered zone onto the legacy three-state enum.
+
+    WORKING/PEAKING/DEBT all project to STRESSED — intentionally lossy;
+    persisted three-state consumers keep working unchanged while
+    five-state consumers opt in via :func:`classify_zone`.
+    """
+    return _ZONE_TO_LEGACY[zone]
+
+
+def maintain_target(
+    group_size: int,
+    *,
+    debt_line: float = PHI_CONJUGATE,
+    ceiling: float = WORK_ZONE_UPPER,
+) -> float:
+    """Group-size-aware maintain-mode utilisation target for WORK quantities.
+
+    Derived from the debt line + peer-pickup math: after one peer of
+    ``group_size`` fails, each survivor takes ``u + u/(N-1)`` and must
+    stay at or under the debt line, so
+    ``u* = min(ceiling, debt_line * (N-1)/N)``. Small groups cruise
+    lighter (N=2 → ≈0.309); larger groups earn the work zone (N≥6 →
+    the 0.5 ceiling). ``group_size == 1`` has no pickup peer — the
+    failover constraint is vacuous, so the conservative
+    calibration-band :data:`TARGET` is returned. Applies to fungible,
+    transferable resources; hard-fail resources (memory) carry their
+    own band instance and semantics.
+    """
+    if group_size < 1:
+        raise ValueError(f"group_size must be >= 1; got {group_size!r}")
+    if not 0.0 < debt_line <= 1.0:
+        raise ValueError(f"debt_line must be in (0, 1]; got {debt_line!r}")
+    if not 0.0 < ceiling <= debt_line:
+        raise ValueError(
+            f"ceiling must be in (0, debt_line]; got {ceiling!r}"
+        )
+    if group_size == 1:
+        return TARGET
+    return min(ceiling, debt_line * (group_size - 1) / group_size)
+
+
+@dataclass(frozen=True, slots=True)
+class GrowthStepAssessment:
+    """Frozen verdict on a proposed capacity-growth step.
+
+    Signals feed interpretation: the assessment never blocks — the
+    caller's gate decides. ``within_phi`` is ``False`` when the
+    proposed step exceeds the φ ratio ("rise too fast and you topple").
+    """
+
+    current_capacity: float
+    proposed_capacity: float
+    step_ratio: float
+    within_phi: bool
+    reasoning: str
+
+
+def assess_growth_step(
+    current_capacity: float,
+    proposed_capacity: float,
+    *,
+    max_ratio: float = GROWTH_STEP_RATIO,
+) -> GrowthStepAssessment:
+    """Assess a proposed capacity raise against the φ-step discipline.
+
+    Shrinking or holding capacity is always ``within_phi`` (it is not
+    growth). Raises ``ValueError`` for non-positive capacities or a
+    ``max_ratio <= 1.0``.
+    """
+    if current_capacity <= 0.0 or not math.isfinite(current_capacity):
+        raise ValueError(
+            f"current_capacity must be a positive finite float; "
+            f"got {current_capacity!r}"
+        )
+    if proposed_capacity <= 0.0 or not math.isfinite(proposed_capacity):
+        raise ValueError(
+            f"proposed_capacity must be a positive finite float; "
+            f"got {proposed_capacity!r}"
+        )
+    if max_ratio <= 1.0:
+        raise ValueError(f"max_ratio must be > 1.0; got {max_ratio!r}")
+    ratio = proposed_capacity / current_capacity
+    within = ratio <= max_ratio + 1e-9
+    reasoning = (
+        f"step_ratio={ratio:.4f} max_ratio={max_ratio:.4f} "
+        f"within_phi={within} — "
+        + (
+            "phi-proportioned (foundation preserved)"
+            if within
+            else "exceeds the phi step; rise-too-fast topple risk"
+        )
+    )
+    return GrowthStepAssessment(
+        current_capacity=current_capacity,
+        proposed_capacity=proposed_capacity,
+        step_ratio=ratio,
+        within_phi=within,
+        reasoning=reasoning,
+    )
 
 def classify(
     utilization: float,
@@ -274,8 +488,13 @@ def _render_reasoning(
 
 __all__ = [
     "DEFAULT_CONFIG",
+    "GROWTH_STEP_RATIO",
+    "GrowthStepAssessment",
     "LOWER_BOUND",
+    "MAINTAINED_CAPACITY",
+    "OperatingMode",
     "PHI",
+    "PHI_CONJUGATE",
     "PHI_SQUARED",
     "RESISTANCE_BAND_CLASSIFICATIONS",
     "ResistanceBandAssessment",
@@ -283,7 +502,15 @@ __all__ = [
     "ResistanceBandConfig",
     "TARGET",
     "UPPER_BOUND",
+    "WORK_ZONE_UPPER",
+    "ZONE_CLASSIFICATIONS",
+    "ZoneClassification",
     "assess",
+    "assess_growth_step",
     "classify",
+    "classify_zone",
+    "maintain_target",
     "recommend_scaling_factor",
+    "validate_utilization",
+    "zone_to_legacy",
 ]

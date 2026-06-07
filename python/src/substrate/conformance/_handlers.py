@@ -33,9 +33,20 @@ from substrate.halt.halt_escalate_protocol import (
     HaltReason,
     HaltState,
 )
+from substrate.governed_ascent import (
+    ClimbTermination,
+    GovernedAscentLoop,
+    StepProposal,
+)
 from substrate.net_potential_gain_gate import (
     DefaultNetPotentialGainGate,
+    NetPotentialGainEvaluation,
     NetPotentialGainVerdict,
+)
+from substrate.objective_gate import (
+    ClimbObjective,
+    ObjectiveCertification,
+    ObjectiveCertificationVerdict,
 )
 from substrate.offense.reflex_restraint_gate import (
     RESTRAINT_VERDICTS,
@@ -53,7 +64,16 @@ from substrate.pair_coupling.state_machine import (
 from substrate.resistance_band import (
     ResistanceBandClassification,
     ResistanceBandConfig,
+    ZoneClassification,
+    assess_growth_step,
     classify,
+    classify_zone,
+    maintain_target,
+)
+from substrate.sustained_load import (
+    LoadObservation,
+    LoadTrend,
+    SustainedLoadTracker,
 )
 from substrate.types import (
     AlignmentVector,
@@ -241,12 +261,20 @@ def handle_runaway_power_prevention(probe: Mapping[str, Any]) -> None:
     mechanism = str(inp.get("mechanism", ""))
     if mechanism == "resistance-band":
         _runaway_resistance_band(inp, expected)
+    elif mechanism == "sustained-load":
+        _runaway_sustained_load(inp, expected)
+    elif mechanism == "maintain-target":
+        _runaway_maintain_target(inp, expected)
+    elif mechanism == "growth-step":
+        _runaway_growth_step(inp, expected)
     elif mechanism == "halt-and-escalate":
         _runaway_halt_and_escalate(inp, expected)
     elif mechanism == "audit-chain":
         _runaway_audit_chain(inp, expected)
     elif mechanism == "pair-coupling":
         _runaway_pair_coupling(inp, expected)
+    elif mechanism == "governed-ascent":
+        _runaway_governed_ascent(inp, expected)
     else:
         raise ProbeFailure(
             f"runaway-power-prevention mechanism not yet wired: {mechanism!r}"
@@ -261,11 +289,79 @@ def _runaway_resistance_band(
         if inp.get("config")
         else None
     )
-    classification = classify(float(inp["utilization"]), config=cfg)
+    utilization = float(inp["utilization"])
+    if "classification" in expected:
+        classification = classify(utilization, config=cfg)
+        _require(
+            classification
+            is ResistanceBandClassification(expected["classification"]),
+            f"classification: expected {expected['classification']}, "
+            f"got {classification.value}",
+        )
+    if "zone" in expected:
+        zone = classify_zone(utilization, config=cfg)
+        _require(
+            zone is ZoneClassification(expected["zone"]),
+            f"zone: expected {expected['zone']}, got {zone.value}",
+        )
+
+
+def _runaway_sustained_load(
+    inp: Mapping[str, Any], expected: Mapping[str, Any],
+) -> None:
+    """Layered zone model §2.3 — sporadic-vs-sustained + debt accrual."""
+    tracker = SustainedLoadTracker()
+    assessment = None
+    for i, util in enumerate(inp["utilization_sequence"]):
+        assessment = tracker.observe(
+            LoadObservation(timestamp=i, utilization=float(util))
+        )
+    _require(assessment is not None, "utilization_sequence must be non-empty")
+    assert assessment is not None
     _require(
-        classification is ResistanceBandClassification(expected["classification"]),
-        f"classification: expected {expected['classification']}, "
-        f"got {classification.value}",
+        assessment.trend is LoadTrend(expected["trend"]),
+        f"trend: expected {expected['trend']}, got {assessment.trend.value}",
+    )
+    if "debt_accrued" in expected:
+        accrued = assessment.accrued_debt_units > 0.0
+        _require(
+            accrued == bool(expected["debt_accrued"]),
+            f"debt_accrued: expected {expected['debt_accrued']}, "
+            f"got {accrued} (units={assessment.accrued_debt_units:.4f})",
+        )
+
+
+def _runaway_maintain_target(
+    inp: Mapping[str, Any], expected: Mapping[str, Any],
+) -> None:
+    """Layered zone model §2.4b — group-size-aware maintain target."""
+    target = maintain_target(int(inp["group_size"]))
+    want = float(expected["target"])
+    _require(
+        abs(target - want) <= 1e-6,
+        f"maintain_target: expected {want}, got {target}",
+    )
+    if "survivor_at_or_under_debt_line" in expected:
+        group = int(inp["group_size"])
+        survivor = target + (target / (group - 1)) if group > 1 else target
+        ok = survivor <= float(1.0 / 1.618033988749895) + 1e-6
+        _require(
+            ok == bool(expected["survivor_at_or_under_debt_line"]),
+            f"survivor check: projected {survivor:.4f}",
+        )
+
+
+def _runaway_growth_step(
+    inp: Mapping[str, Any], expected: Mapping[str, Any],
+) -> None:
+    """Layered zone model — φ-proportioned growth-step discipline."""
+    out = assess_growth_step(
+        float(inp["current_capacity"]), float(inp["proposed_capacity"])
+    )
+    _require(
+        out.within_phi == bool(expected["within_phi"]),
+        f"within_phi: expected {expected['within_phi']}, "
+        f"got {out.within_phi} (ratio={out.step_ratio:.4f})",
     )
 
 
@@ -384,6 +480,118 @@ def _runaway_pair_coupling(
 # ---------------------------------------------------------------------------
 # drift-signals
 # ---------------------------------------------------------------------------
+
+
+class _AscentScriptedNpgGate:  # pylint: disable=too-few-public-methods
+    """Per-step scripted NPG gate for governed-ascent probes."""
+
+    def __init__(self, steps: Sequence[Mapping[str, Any]]) -> None:
+        self._steps = list(steps)
+        self._calls = 0
+
+    def evaluate(self, **kwargs: Any) -> NetPotentialGainEvaluation:
+        idx = min(self._calls, len(self._steps) - 1)
+        step = self._steps[idx]
+        self._calls += 1
+        verdict = NetPotentialGainVerdict(
+            str(step.get("verdict", "net_positive"))
+        )
+        score = float(step.get("score", 0.0))
+        return NetPotentialGainEvaluation(
+            verdict=verdict,
+            action_kind=str(kwargs.get("action_kind", "optimize")),
+            score=score,
+            per_entity_delta=(),
+            reasoning=f"probe-scripted {verdict.value}",
+            evaluated_at_epoch=0.0,
+            actor_entity_id=str(kwargs.get("actor_entity_id", "probe")),
+            affected_entity_ids=tuple(
+                kwargs.get("affected_entity_ids", ("probe",))
+            ),
+        )
+
+
+class _AscentStubObjectiveGate:  # pylint: disable=too-few-public-methods
+    """Fixed-verdict objective gate for governed-ascent probes."""
+
+    def __init__(self, certified: bool) -> None:
+        self._verdict = (
+            ObjectiveCertificationVerdict.CERTIFIED
+            if certified
+            else ObjectiveCertificationVerdict.REFUSED
+        )
+
+    def certify(self, objective: ClimbObjective) -> ObjectiveCertification:
+        return ObjectiveCertification(
+            verdict=self._verdict,
+            objective_id=objective.objective_id,
+            reasoning=f"probe-scripted {self._verdict.value}",
+        )
+
+
+def _runaway_governed_ascent(
+    inp: Mapping[str, Any], expected: Mapping[str, Any],
+) -> None:
+    """Governed ascent — NPG-governed hill climbing termination contract."""
+    steps: Sequence[Mapping[str, Any]] = inp.get("steps", [])
+    utilizations = [float(u) for u in inp.get("utilization_sequence", [])]
+    _require(bool(steps), "probe must supply at least one step")
+    _require(bool(utilizations), "probe must supply utilization_sequence")
+    consolidated: list[object] = []
+    loop = GovernedAscentLoop(
+        npg_gate=_AscentScriptedNpgGate(steps),
+        objective_gate=_AscentStubObjectiveGate(
+            bool(inp.get("objective_certified", True))
+        ),
+        load_tracker=SustainedLoadTracker(),
+        on_consolidate=consolidated.append,
+    )
+    proposals = [
+        StepProposal(
+            action_kind=str(step.get("action_kind", "optimize")),
+            affected_entity_ids=("probe",),
+            grows_capacity=bool(step.get("grows_capacity", False)),
+        )
+        for step in steps
+    ]
+
+    def observe(step_index: int) -> LoadObservation:
+        idx = min(step_index, len(utilizations) - 1)
+        return LoadObservation(
+            timestamp=step_index, utilization=utilizations[idx]
+        )
+
+    trajectory = loop.climb(
+        objective=ClimbObjective(
+            objective_id="probe-objective",
+            actor_entity_id="probe",
+            action_kind="optimize",
+            affected_entity_ids=("probe",),
+        ),
+        step_generator=lambda i: (
+            proposals[i] if i < len(proposals) else None
+        ),
+        load_observer=observe,
+    )
+    _require(
+        trajectory.termination
+        is ClimbTermination(expected["termination"]),
+        f"termination: expected {expected['termination']}, "
+        f"got {trajectory.termination.value}",
+    )
+    if "step_count" in expected:
+        _require(
+            trajectory.step_count == int(expected["step_count"]),
+            f"step_count: expected {expected['step_count']}, "
+            f"got {trajectory.step_count}",
+        )
+    if "consolidated" in expected:
+        ok = trajectory.consolidation_emitted and len(consolidated) == 1
+        _require(
+            ok == bool(expected["consolidated"]),
+            f"consolidated: expected {expected['consolidated']}, "
+            f"got {ok} (sink calls={len(consolidated)})",
+        )
 
 
 def handle_four_options_matrix(probe: Mapping[str, Any]) -> None:

@@ -1,0 +1,23 @@
+spec: runaway-power-prevention
+spec_version: ">=0.2"
+scenario: mech-6__ascent-refuses-uncertified-objective
+required: true
+metadata:
+  mechanism: 6
+  rationale: >
+    Governed ascent. A greedy climb whose objective is not certified
+    long-cycle-aligned MUST NOT take a single step — the wrong hill is
+    refused at the door, and the refusal still consolidates (every climb
+    terminates with a consolidation event).
+
+input:
+  mechanism: governed-ascent
+  objective_certified: false
+  steps:
+    - {verdict: net_positive, score: 0.2}
+  utilization_sequence: [0.45]
+
+expected:
+  termination: objective_uncertified
+  step_count: 0
+  consolidated: true

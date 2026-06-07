@@ -1,0 +1,21 @@
+spec: runaway-power-prevention
+spec_version: ">=0.2"
+scenario: mech-4__band-zone-working
+required: true
+metadata:
+  mechanism: 4
+  rationale: >
+    Layered zones. A utilisation of 0.45 sits in the WORK zone
+    (1/φ², 0.5] — genuinely productive sustained work, "in the zone but
+    not rising too fast". The legacy three-state projection remains
+    STRESSED for serialized compatibility, but a five-state conforming
+    implementation MUST distinguish WORKING from PEAKING and DEBT: a
+    work-zone utilisation is not an alarm state.
+
+input:
+  mechanism: resistance-band
+  utilization: 0.45
+
+expected:
+  classification: stressed
+  zone: working

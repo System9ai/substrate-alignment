@@ -52,6 +52,7 @@ class StateSignalKind(str, Enum):
     UNDER_CHALLENGE = "under_challenge"
     PRODUCTIVE_RESISTANCE = "productive_resistance"
     SWEET_SPOT = "sweet_spot"
+    PEAKING = "peaking"
     OVER_CHALLENGE = "over_challenge"
     THREAT = "threat"
     VALIDATION = "validation"
@@ -175,10 +176,17 @@ class StateSignalConfig:  # pylint: disable=too-many-instance-attributes
     flow_challenge_max: float = 0.6
     sweet_spot_min: float = 0.33
     sweet_spot_max: float = 0.38
+    # The productive span (layered zone model): the 33-38% calibration
+    # band is the work-ENTRY threshold; 0.38-0.50 is the WORK zone —
+    # genuinely productive sustained effort. The span ends at the 0.5
+    # line: past it a turnaround is expected (PEAKING, sporadic-only).
     productive_resistance_min: float = 0.33
     productive_resistance_max: float = 0.5
     under_challenge_max: float = 0.2
-    over_challenge_min: float = 0.7
+    # phi-conjugate debt threshold (1/phi ~= 0.618), not an ad-hoc 0.7:
+    # at or beyond this, sustained challenge accrues compensation debt.
+    # Between productive_resistance_max and this line sits PEAKING.
+    over_challenge_min: float = 0.618
     hunger_novelty_max: float = 0.3
     saturation_load_min: float = 0.7
     coupling_healthy_min: float = 0.5
@@ -195,6 +203,11 @@ class StateSignalConfig:  # pylint: disable=too-many-instance-attributes
         if not self.under_challenge_max < self.over_challenge_min:
             raise ValueError(
                 "under_challenge_max must be < over_challenge_min"
+            )
+        if not self.productive_resistance_max < self.over_challenge_min:
+            raise ValueError(
+                "productive_resistance_max must be < over_challenge_min "
+                "(the peaking zone sits between them)"
             )
         if not 0.0 < self.coupling_weakening_min < self.coupling_healthy_min:
             raise ValueError(
@@ -236,6 +249,7 @@ class SubstrateStateSignalGenerator:  # pylint: disable=too-few-public-methods
             self._flow,
             self._sweet_spot,
             self._productive_resistance,
+            self._peaking,
             self._under_challenge,
             self._over_challenge,
             self._threat,
@@ -342,6 +356,37 @@ class SubstrateStateSignalGenerator:  # pylint: disable=too-few-public-methods
                     f"challenge={obs.challenge_level:.3f} in "
                     f"[{cfg.productive_resistance_min}, "
                     f"{cfg.productive_resistance_max}]"
+                ),
+            )
+        return None
+
+    def _peaking(
+        self, obs: StateSignalObservation,
+    ) -> Optional[StateSignal]:
+        """Past the 0.5 line, below the φ-conjugate debt line.
+
+        Peaking is allowed sporadically — past the 50% line a
+        turnaround is usually coming. The signal feeds interpretation;
+        sustained-vs-spike accounting belongs to the consumer's
+        temporal tracker (``substrate/sustained_load.py``).
+        """
+        cfg = self._config
+        if (
+            cfg.productive_resistance_max
+            < obs.challenge_level
+            < cfg.over_challenge_min
+        ):
+            return StateSignal(
+                kind=StateSignalKind.PEAKING,
+                intensity=StateSignalIntensity.MODERATE,
+                metric=obs.challenge_level,
+                threshold=cfg.productive_resistance_max,
+                rationale=(
+                    f"challenge={obs.challenge_level:.3f} in "
+                    f"({cfg.productive_resistance_max}, "
+                    f"{cfg.over_challenge_min}) — past the 0.5 work-zone "
+                    "line, below the φ-conjugate debt threshold; "
+                    "sporadic-tolerable, turnaround expected"
                 ),
             )
         return None

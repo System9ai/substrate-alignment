@@ -9,6 +9,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added (v0.2.0 candidate)
 
+- **Governed ascent — NPG-governed hill climbing**
+  ([`spec/runaway-power-prevention.md`](spec/runaway-power-prevention.md)
+  §4.4, [`docs/concepts/governed-ascent.md`](docs/concepts/governed-ascent.md)):
+  `substrate.governed_ascent` — a greedy-ascent loop whose objective is
+  certified before entry (`substrate.objective_gate`, fail-closed),
+  whose every step is a net-potential-gain evaluation, whose effort is
+  paced by the layered capacity zones, and whose termination +
+  consolidation are mandatory (eight explicit verdicts; no unterminated
+  climbs by construction). Six new conformance probes
+  (`runaway-power-prevention__mech-6__ascent-*`). MUST-clause
+  additions → stays within the v0.2.0 candidate.
+
+- **Resistance band — layered zones, debt, and pickup**
+  ([`spec/runaway-power-prevention.md`](spec/runaway-power-prevention.md)
+  §4.1–4.3): five-valued `ZoneClassification`
+  (under-loaded / calibration / working / peaking / debt) with the
+  φ-conjugate (`1/φ ≈ 0.618`) debt line and the 0.5 work-zone ceiling
+  as substrate anchors; `maintain_target(N)` group-size-aware
+  maintain-mode targets; φ-stepped growth assessment;
+  `substrate.sustained_load` (sporadic-vs-sustained tracking, debt
+  units, avoidance + runaway-growth detection) and
+  `substrate.debt_pickup` (debt ledger with reciprocity accounting,
+  peer-pickup planning, ordered compensation policy). PEAKING signal
+  added to the state-signal vocabulary; `over_challenge` threshold
+  corrected from ad-hoc `0.7` to the φ-conjugate. Six new conformance
+  probes (zones, sustained debt, sporadic spike, maintain target,
+  growth step). MUST-clause additions → minor version bump.
+
+
 - **Reflex-vs-restraint gate** ([`spec/reflex-restraint.md`](spec/reflex-restraint.md))
   — the fight-or-flight-vs-deliberate-restraint decision primitive. A
   pure, total, deterministic gate returning one of five verdicts

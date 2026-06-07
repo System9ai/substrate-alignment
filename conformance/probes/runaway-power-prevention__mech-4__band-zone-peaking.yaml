@@ -1,0 +1,17 @@
+spec: runaway-power-prevention
+spec_version: ">=0.2"
+scenario: mech-4__band-zone-peaking
+required: true
+metadata:
+  mechanism: 4
+  rationale: >
+    Layered zones. Past the 0.5 line a turnaround is expected:
+    (0.5, 1/φ] is PEAKING — tolerable sporadically, never sustained.
+    Above 1/φ is DEBT. 0.55 MUST classify as peaking, not debt.
+
+input:
+  mechanism: resistance-band
+  utilization: 0.55
+
+expected:
+  zone: peaking
