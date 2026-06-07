@@ -43,7 +43,7 @@ coverage.xml
 .envrc
 
 # Documentation build
-site/
+/site/
 docs/_build/
 
 # OS / editor cruft
