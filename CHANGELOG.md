@@ -84,6 +84,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added (v0.3.0 candidate)
 
+- **Executive band package** (`substrate.executive`) — the resistance band made
+  operational as a decision engine. Two named lenses on one utilization value —
+  `LoadZone` (the load lens: IDLE/RECREATION/WORK/PEAKING/WARNING/DANGER on the
+  symmetric φ-conjugate ladder) and `CyclePhase` (the cycle lens: ASCENDING/PIVOT/
+  PAST_PIVOT over the 24-step work span) — with `classify_load_zone` /
+  `classify_cycle_phase`. Levels are geometric; consequences are temporal (no
+  spike-tolerance field — that belongs to the `SustainedLoadTracker`). A
+  structurally-validated `BandProfile` (R1–R5: ordering, φ-anchors, conjugate sum,
+  symmetry, RESISTANCE tighten-only), the `Quantity`/`Cycle`/`ResourceKind`
+  discriminators + `setpoint_for` (RESISTANCE vs WORK bands; GROWTH rejected), and
+  `order_index` / `negentropy` (the order-from-disorder emergence metric, `1 −`
+  normalised Shannon entropy + its trend). Lifted into the top-level `substrate`
+  namespace. 29 conformance tests; pyright clean; pylint 10.00.
+
 - **Multi-scale observation Protocol** ([`spec/multi-scale.md`](spec/multi-scale.md))
   — pluggable `SubstrateScope` Protocol with default `cell` / `node`
   / `org` triple + operator-extensible registry. Hyphenated package
