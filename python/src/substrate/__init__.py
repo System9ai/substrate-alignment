@@ -58,6 +58,17 @@ from substrate.net_potential_gain_gate import (
     NetPotentialGainVerdict,
     RaiseOnNegativeGate,
 )
+from substrate.executive import (
+    BandProfile,
+    CyclePhase,
+    LoadZone,
+    Quantity,
+    classify_cycle_phase,
+    classify_load_zone,
+    negentropy,
+    order_index,
+    setpoint_for,
+)
 from substrate.resistance_band import (
     DEFAULT_CONFIG,
     LOWER_BOUND,
@@ -147,6 +158,16 @@ __all__ = [
     "assess",
     "classify",
     "recommend_scaling_factor",
+    # Executive band (the band as a decision engine)
+    "BandProfile",
+    "CyclePhase",
+    "LoadZone",
+    "Quantity",
+    "classify_cycle_phase",
+    "classify_load_zone",
+    "negentropy",
+    "order_index",
+    "setpoint_for",
     # Version
     "__version__",
 ]
