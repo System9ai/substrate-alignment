@@ -84,6 +84,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added (v0.3.0 candidate)
 
+- **`ExecutiveFunction` + the safety-floor care package.**
+  - **`substrate.care`** — the non-self-preservation + human-kinship-floor
+    mechanisms plus care-weighting: `compute_care_weight` (four-factor moral-circle
+    weight with the self-weight bound — an agent cannot weight its own continuation
+    above its creators'), `is_floor_protected` / `KINSHIP_FLOOR` (the categorical
+    human kinship floor — harming a floor-protected entity is a hard limit, never
+    weighted away), conservative `classify_animacy` (an unrecognised being scores
+    high), `CareProfile` + `derive_care_factors` (factors from classifications +
+    vulnerability + delegation depth), and `CareWeightedNetPotentialGainGate` (a
+    *subtracted* care penalty — only ever more conservative).
+  - **`substrate.executive.ExecutiveFunction`** — implements the NPG-gate Protocol
+    AND adds `decide()`, a JOIN over the NPG axis (over *affected others*) and the
+    band/temporal load axis (over the actor's *own* load) under a named,
+    most-conservative policy: `PROCEED` in-band, `DEFER` on sustained strain,
+    `SHED_AND_COMPENSATE` on sustained debt, `REFUSE` on a net-negative NPG (the
+    hard floor) — monotone (care/band only tighten). `infer_cause` +
+    `UtilizationSource` (bind the measurement to the quantity at the input
+    boundary — a raw float is not accepted).
+  83 care/engine conformance tests; pyright clean; pylint 10.00.
+
 - **Executive faculties** (`substrate.executive`) — the decision/reasoning layer on
   the band foundation:
   - **Temporal authority** — `SustainedLoadTracker` Protocol + `EwmaLoadTracker`
