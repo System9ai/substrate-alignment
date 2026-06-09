@@ -84,6 +84,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added (v0.3.0 candidate)
 
+- **Executive faculties** (`substrate.executive`) — the decision/reasoning layer on
+  the band foundation:
+  - **Temporal authority** — `SustainedLoadTracker` Protocol + `EwmaLoadTracker`
+    (EWMA + consecutive-breach): the sole SPIKE-vs-SUSTAINED authority, so the
+    pivot and damage/debt fire by *duration* (a transient peak is absorbed).
+  - **Scale** — `ExecutiveScale` / `ScaleAxis` + `axis_of` / `physical_parent` /
+    `entity_parent`: the entity / physical (cell→rack→zone→region) / grouping
+    roll-up axes.
+  - **Deliberation + perspective-taking** (`deliberate`) — roll out N candidate
+    actions, score each affected entity's impact *from its own frame*
+    (care-weight × φ-proportioned trajectory), disqualify floor-harm and
+    net-negative-long-cycle extraction, surface trade-offs, pick the arg-max
+    long-horizon net-potential-gain action.
+  - **State query** (`integrate_state`) — integrate a load history into energy /
+    effort (slacking = avoidance) / trajectory over time + a human-readable
+    summary.
+  - **Scale roll-up** (`roll_up`) — aggregate member loads up a parent scale →
+    distribution, worst member, over-load/idle failure-tell fractions.
+  - **Peer awareness + alarm propagation** (`correlate_anomalies` / `assess_alarm`)
+    — herd-panic correlation (N peers weird together ⇒ the enclosing scale has a
+    problem) + trust × independent-corroboration alarm weighting with the
+    panic-injection guard.
+  - **Observed-graph extraction detection** (`detect_extraction`) — the substrate
+    calculus over an observed relationship graph; flags predators vs supporters.
+  91 conformance tests; pyright clean; pylint 10.00.
+
 - **Executive band package** (`substrate.executive`) — the resistance band made
   operational as a decision engine. Two named lenses on one utilization value —
   `LoadZone` (the load lens: IDLE/RECREATION/WORK/PEAKING/WARNING/DANGER on the
