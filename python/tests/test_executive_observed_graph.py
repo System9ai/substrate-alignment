@@ -1,4 +1,4 @@
-"""Tests for the NPG calculus on the observed entity graph (WS-8)."""
+"""Tests for the NPG calculus on the observed entity graph."""
 from __future__ import annotations
 
 import pytest
