@@ -69,6 +69,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 28 reference-impl unit tests pin every clause of `spec/evidence-grade.md`
   § 3, lifting the suite from 2315 → 2343 tests.
 
+### Changed (v0.3.0 candidate)
+
+- **`threshold_derivation` is now quantity-aware (RESISTANCE vs WORK).**
+  The helper previously offered only the resistance positions
+  (`LOWER` / `TARGET` / `UPPER`, `1/3 … 1/φ²`), so deriving a WORK
+  quantity (buffer capacity, rate budget, queue depth) from `TARGET`
+  under-provisioned it by ~20%. Added `BandPosition.WORK_TARGET`
+  (work-zone midpoint ~0.441) + `WORK_CEILING` (0.50 pivot) and the
+  `derive_work_target` / `derive_work_target_float` helpers; documented
+  that sustained-vs-spike is the caller's `SustainedLoadTracker` call,
+  not a static derivation. The `redis-rate-limiter` adoption guide now
+  derives its sustained refill rate from the work zone.
+
 ### Added (v0.3.0 candidate)
 
 - **Multi-scale observation Protocol** ([`spec/multi-scale.md`](spec/multi-scale.md))

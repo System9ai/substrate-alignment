@@ -22,8 +22,7 @@ from substrate import ResistanceBandConfig
 from substrate.threshold_derivation import (
     derive_hard_limit,
     derive_soft_limit,
-    derive_target,
-    derive_threshold_float,
+    derive_work_target_float,
 )
 
 
@@ -38,6 +37,9 @@ class BandLimiter:
       can absorb a burst; above it, the limiter starts charging.
     - ``hard_limit`` (band upper edge × capacity) — above this, requests
       are rejected.
+    - sustained ``refill`` rate (work-zone target × capacity) — the
+      throughput the limiter sustains is a WORK quantity, so it targets the
+      work zone (~0.441), not the resistance setpoint.
 
     Limit *override* policy follows the band: tighter is permitted, looser
     is rejected at construction.
@@ -55,8 +57,10 @@ class BandLimiter:
         self._prefix = key_prefix
         self._soft = float(derive_soft_limit(int(capacity), config=band))
         self._hard = float(derive_hard_limit(int(capacity), config=band))
-        # The refill rate aims at the band's midpoint as a closed-loop target.
-        self._refill_per_sec = derive_threshold_float(capacity, config=band)
+        # The sustained refill rate is a WORK quantity (throughput the
+        # system carries), so it targets the work-zone midpoint (~0.441),
+        # not the resistance setpoint (~0.358).
+        self._refill_per_sec = derive_work_target_float(capacity, config=band)
 
     @property
     def soft_limit(self) -> float:
@@ -85,7 +89,7 @@ class BandLimiter:
 
 ## What the band buys
 
-- **Commensurability across limiters.** A `BandLimiter(capacity=1000)` for one upstream and a `BandLimiter(capacity=10_000)` for another have the same *shape* — both run at `~33–38%` of capacity. Operators reasoning about either limiter use the same mental model.
+- **Commensurability across limiters.** A `BandLimiter(capacity=1000)` for one upstream and a `BandLimiter(capacity=10_000)` for another have the same *shape* — both sustain throughput in the work zone (`~38–50%` of capacity, the carried-load band) with the same burst/reject edges. Operators reasoning about either limiter use the same mental model.
 - **Single-knob tightening.** When operations needs to shed load globally (e.g., a degraded downstream), tightening the band config propagates to every limiter that derives from it. No per-limiter migration.
 - **Refusal of unsafe widening.** A subsystem that proposes a `lower_bound=0.20, upper_bound=0.50` configuration is *refused at construction* (the package rejects loosening past defaults). The operator surface gets the error early, not when the limiter is in production.
 

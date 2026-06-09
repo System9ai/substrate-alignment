@@ -8,6 +8,7 @@ import pytest
 from substrate.resistance_band import (
     LOWER_BOUND,
     UPPER_BOUND,
+    WORK_ZONE_UPPER,
     ResistanceBandClassification,
     ResistanceBandConfig,
 )
@@ -23,7 +24,47 @@ from substrate.threshold_derivation import (
     derive_target,
     derive_threshold,
     derive_threshold_float,
+    derive_work_target,
+    derive_work_target_float,
 )
+
+
+_WORK_TARGET_FRACTION = (UPPER_BOUND + WORK_ZONE_UPPER) / 2.0
+
+
+class TestDeriveWorkTarget:
+    def test_work_target_at_work_zone_midpoint(self) -> None:
+        assert derive_work_target(1024) == int(1024 * _WORK_TARGET_FRACTION)
+
+    def test_work_target_exceeds_resistance_target(self) -> None:
+        # Carried-load provisioning must exceed the resistance setpoint
+        # (~0.441 vs ~0.358).
+        assert derive_work_target(1024) > derive_target(1024)
+
+    def test_work_target_position_matches_helper(self) -> None:
+        assert derive_work_target(1000) == derive_threshold(
+            1000, position=BandPosition.WORK_TARGET,
+        )
+
+    def test_work_ceiling_is_pivot(self) -> None:
+        assert derive_threshold(
+            1000, position=BandPosition.WORK_CEILING,
+        ) == int(1000 * WORK_ZONE_UPPER)
+
+    def test_work_target_within_work_zone(self) -> None:
+        assert UPPER_BOUND < _WORK_TARGET_FRACTION < WORK_ZONE_UPPER
+
+    def test_work_target_float_no_floor(self) -> None:
+        assert derive_work_target_float(100.0) == pytest.approx(
+            100.0 * _WORK_TARGET_FRACTION
+        )
+
+    def test_work_target_min_floor(self) -> None:
+        assert derive_work_target(1) == DEFAULT_MIN_THRESHOLD
+
+    def test_work_target_negative_raises(self) -> None:
+        with pytest.raises(ValueError, match="capacity"):
+            derive_work_target(-1)
 
 
 class TestDeriveThreshold:
