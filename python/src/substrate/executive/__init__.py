@@ -28,6 +28,12 @@ from substrate.executive.negentropy import (
     negentropy,
     order_index,
 )
+from substrate.executive.observed_graph import (
+    EntityRollup,
+    ExtractionReport,
+    NpgEdge,
+    detect_extraction,
+)
 from substrate.executive.quantities import (
     Cycle,
     GrowthNotADecisionBand,
@@ -44,14 +50,18 @@ __all__ = [
     "BandProfileInvalid",
     "Cycle",
     "CyclePhase",
+    "EntityRollup",
+    "ExtractionReport",
     "GrowthNotADecisionBand",
     "LoadZone",
     "NegentropyDirection",
     "NegentropyReport",
+    "NpgEdge",
     "Quantity",
     "ResourceKind",
     "classify_cycle_phase",
     "classify_load_zone",
+    "detect_extraction",
     "negentropy",
     "order_index",
     "setpoint_for",
