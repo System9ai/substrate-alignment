@@ -31,7 +31,7 @@ position.
 3. **Effort is paced by the layered capacity zones** (see
    [resistance-band.md](resistance-band.md)). Climb effort is a WORK quantity: base effort
    through the work zone, consecutive excursions past the 0.5 ceiling bounded by a sporadic
-   budget, sustained operation past the φ-conjugate terminated as debt.
+   budget, sustained operation past the `2/3` debt line terminated as debt.
 4. **Capacity growth inside a climb is growth-quantity work**: `grows_capacity` steps feed the
    growth-streak monitor; consecutive growth without consolidation terminates the climb as
    runaway (mechanism 6).

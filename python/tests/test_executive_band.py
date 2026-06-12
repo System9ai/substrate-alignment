@@ -114,6 +114,6 @@ class TestZoneToLegacy:
         assert zone_to_legacy(LoadZone.IDLE) is ZoneClassification.UNDER_LOADED
         assert zone_to_legacy(LoadZone.RECREATION) is ZoneClassification.CALIBRATION
         assert zone_to_legacy(LoadZone.WORK) is ZoneClassification.WORKING
-        assert zone_to_legacy(LoadZone.PEAKING) is ZoneClassification.WORKING
-        assert zone_to_legacy(LoadZone.WARNING) is ZoneClassification.PEAKING
+        assert zone_to_legacy(LoadZone.PEAKING) is ZoneClassification.PEAKING
+        assert zone_to_legacy(LoadZone.WARNING) is ZoneClassification.WARNING
         assert zone_to_legacy(LoadZone.DANGER) is ZoneClassification.DEBT

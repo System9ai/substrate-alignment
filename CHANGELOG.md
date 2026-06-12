@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added (v0.2.0 candidate)
+### Added (v0.3.0 candidate)
 
 - **Governed ascent — NPG-governed hill climbing**
   ([`spec/runaway-power-prevention.md`](spec/runaway-power-prevention.md)
@@ -23,19 +23,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Resistance band — layered zones, debt, and pickup**
   ([`spec/runaway-power-prevention.md`](spec/runaway-power-prevention.md)
-  §4.1–4.3): five-valued `ZoneClassification`
-  (under-loaded / calibration / working / peaking / debt) with the
-  φ-conjugate (`1/φ ≈ 0.618`) debt line and the 0.5 work-zone ceiling
-  as substrate anchors; `maintain_target(N)` group-size-aware
-  maintain-mode targets; φ-stepped growth assessment;
-  `substrate.sustained_load` (sporadic-vs-sustained tracking, debt
-  units, avoidance + runaway-growth detection) and
+  §4.1–4.3): six-valued `ZoneClassification`
+  (under-loaded / calibration / working / peaking / **warning** / debt),
+  mirror-symmetric about the `0.50` pivot, with the **uniform `2/3`
+  debt line** (`DANGER_LINE`/`TWO_THIRDS`), the 0.5 work-zone ceiling,
+  and the φ-conjugate (`1/φ ≈ 0.618`, `GROWTH_CEILING`) PEAKING/WARNING
+  boundary and failover-spike ceiling as substrate anchors. The
+  φ-conjugate is **no longer** the debt line — the obsolete debt@0.618
+  model is corrected to debt@`2/3`. `maintain_target(N)` group-size-aware
+  maintain-mode targets (`debt_line` param renamed `failover_ceiling`);
+  φ-stepped growth assessment; `substrate.sustained_load`
+  (sporadic-vs-sustained tracking, debt units, avoidance +
+  runaway-growth detection; default `debt_line` → `2/3`) and
   `substrate.debt_pickup` (debt ledger with reciprocity accounting,
-  peer-pickup planning, ordered compensation policy). PEAKING signal
-  added to the state-signal vocabulary; `over_challenge` threshold
-  corrected from ad-hoc `0.7` to the φ-conjugate. Six new conformance
-  probes (zones, sustained debt, sporadic spike, maintain target,
-  growth step). MUST-clause additions → minor version bump.
+  peer-pickup planning, ordered compensation policy; `hard_ceiling`
+  annotated as the failover-spike pickup ceiling). PEAKING signal added
+  to the state-signal vocabulary; `over_challenge` threshold set to the
+  `2/3` debt line. Seven conformance probes (zones incl. the new
+  `band-zone-warning`, sustained debt, sporadic spike, maintain target,
+  growth step). The 6-zone classifier + uniform `2/3` debt line are
+  normative MUST changes → **minor version bump to v0.3.0**.
 
 
 - **Reflex-vs-restraint gate** ([`spec/reflex-restraint.md`](spec/reflex-restraint.md))

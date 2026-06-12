@@ -1,9 +1,11 @@
 """Debt as a transferable obligation — ledger, pickup, reciprocity (layered zone model §2.4).
 
-The founder's contract: sustained operation above the φ-conjugate debt
-line creates a DEBT that the system must repay — "others pick up." The
-work zone (0.38–0.50) IS the absorption capacity that makes transfer
-possible (the same math as N+1 failover). Justice is reciprocity over
+The contract: sustained operation above the ``2/3`` debt line creates a
+DEBT that the system must repay — "others pick up." The work zone
+(0.38–0.50) IS the absorption capacity that makes transfer possible
+(the same math as N+1 failover); a carrier's ``hard_ceiling`` for
+pickup is the φ-conjugate ``1/φ ≈ 0.618`` (the failover-spike ceiling,
+NOT the debt line). Justice is reciprocity over
 time: the ledger records who carried whom; chronic-debtor and
 free-rider asymmetries surface as drift-signal feeds rather than being
 silently absorbed.
@@ -267,6 +269,8 @@ class PeerPickupCoordinator:  # pylint: disable=too-few-public-methods
         *,
         recovery_target: float = LOWER_BOUND,
         prefer_ceiling: float = WORK_ZONE_UPPER,
+        # The φ-conjugate is the pickup ceiling (failover-spike ceiling),
+        # NOT the debt line — a carrier may transiently absorb up to 1/φ.
         hard_ceiling: float = PHI_CONJUGATE,
     ) -> None:
         if not 0.0 <= recovery_target < prefer_ceiling <= hard_ceiling <= 1.0:

@@ -1,10 +1,12 @@
 """SustainedLoadTracker — sporadic-vs-sustained accounting (layered zone model §2.3).
 
 The pure band classifiers (``resistance_band.classify_zone``) are
-instantaneous; the founder's capacity contract is temporal: a PEAKING
-excursion is tolerable **sporadically** and must decay; sustained
-operation above the φ-conjugate debt line accrues **compensation
-debt**; and an entity that repeatedly approaches the work-entry
+instantaneous; the capacity contract is temporal: a PEAKING excursion
+is tolerable **sporadically** and must decay; sustained operation
+above the ``2/3`` debt line accrues **compensation debt** (sustained
+in the 0.618–2/3 WARNING band reads as WINDED — the approach to
+burnout, not yet debt); and an entity that repeatedly approaches the
+work-entry
 threshold and retreats while work is pending is **avoiding** ("we
 don't want to bounce off 38%").
 
@@ -27,6 +29,7 @@ from enum import Enum
 from typing import Deque, Final, Optional
 
 from substrate.resistance_band import (
+    DANGER_LINE,
     LOWER_BOUND,
     PHI_CONJUGATE,
     UPPER_BOUND,
@@ -41,6 +44,7 @@ class LoadTrend(str, Enum):
     NOMINAL = "nominal"
     SPIKE = "spike"
     SUSTAINED_STRAIN = "sustained_strain"
+    WINDED = "winded"
     DEBT_ACCRUING = "debt_accruing"
     AVOIDANCE = "avoidance"
     RUNAWAY_GROWTH = "runaway_growth"
@@ -92,7 +96,8 @@ class SustainedLoadConfig:  # pylint: disable=too-many-instance-attributes
     ewma_alpha: float = 0.3
     work_entry: float = UPPER_BOUND
     spike_line: float = WORK_ZONE_UPPER
-    debt_line: float = PHI_CONJUGATE
+    warning_line: float = PHI_CONJUGATE
+    debt_line: float = DANGER_LINE
     sustain_count: int = 3
     avoidance_cycles: int = 3
     avoidance_retreat_below: float = LOWER_BOUND
@@ -111,15 +116,17 @@ class SustainedLoadConfig:  # pylint: disable=too-many-instance-attributes
             < self.avoidance_retreat_below
             <= self.work_entry
             < self.spike_line
+            < self.warning_line
             < self.debt_line
             <= 1.0
         ):
             raise ValueError(
                 "thresholds must satisfy 0 < retreat <= work_entry < "
-                "spike_line < debt_line <= 1; got "
+                "spike_line < warning_line < debt_line <= 1; got "
                 f"retreat={self.avoidance_retreat_below!r} "
                 f"work_entry={self.work_entry!r} "
-                f"spike={self.spike_line!r} debt={self.debt_line!r}"
+                f"spike={self.spike_line!r} warning={self.warning_line!r} "
+                f"debt={self.debt_line!r}"
             )
         if self.sustain_count < 1:
             raise ValueError(
@@ -259,10 +266,14 @@ class SustainedLoadTracker:  # pylint: disable=too-many-instance-attributes
             return LoadTrend.DEBT_ACCRUING
         if self._ewma > cfg.spike_line:
             recent = list(self._observations)[-cfg.sustain_count :]
-            if len(recent) >= cfg.sustain_count and all(
-                o.utilization > cfg.spike_line for o in recent
-            ):
-                return LoadTrend.SUSTAINED_STRAIN
+            if len(recent) >= cfg.sustain_count:
+                # Sustained in the WARNING band (winded — past the
+                # φ-conjugate, not yet past the 2/3 debt line) is distinct
+                # from strain sustained merely past the 0.5 pivot.
+                if all(o.utilization > cfg.warning_line for o in recent):
+                    return LoadTrend.WINDED
+                if all(o.utilization > cfg.spike_line for o in recent):
+                    return LoadTrend.SUSTAINED_STRAIN
         if obs.utilization > cfg.spike_line:
             return LoadTrend.SPIKE
         if self._approach_retreat_cycles >= cfg.avoidance_cycles:

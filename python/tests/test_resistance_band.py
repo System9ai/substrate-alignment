@@ -330,7 +330,7 @@ def test_assessment_shape_constructable() -> None:
     assert not ev.is_stressed
     assert not ev.is_under_loaded
 class TestLayeredZones:
-    """Layered zone model (2026-06-05): five-valued layered-zone classification."""
+    """Layered zone model: six-valued layered-zone classification (uniform 2/3 debt line)."""
 
     def test_zone_boundaries(self) -> None:
         from substrate.resistance_band import (  # noqa: PLC0415
@@ -346,6 +346,9 @@ class TestLayeredZones:
         assert classify_zone(0.50) is ZoneClassification.WORKING
         assert classify_zone(0.55) is ZoneClassification.PEAKING
         assert classify_zone(PHI_CONJUGATE) is ZoneClassification.PEAKING
+        # WARNING band (1/φ, 2/3]: winded, NOT yet debt.
+        assert classify_zone(0.65) is ZoneClassification.WARNING
+        # DEBT only past the uniform 2/3 debt line.
         assert classify_zone(0.70) is ZoneClassification.DEBT
 
     def test_zone_to_legacy_projection(self) -> None:
@@ -362,6 +365,7 @@ class TestLayeredZones:
         for zone in (
             ZoneClassification.WORKING,
             ZoneClassification.PEAKING,
+            ZoneClassification.WARNING,
             ZoneClassification.DEBT,
         ):
             assert (
@@ -437,7 +441,7 @@ class TestMaintainTarget:
         with pytest.raises(ValueError):
             maintain_target(0)
         with pytest.raises(ValueError):
-            maintain_target(4, ceiling=0.9, debt_line=0.6)
+            maintain_target(4, ceiling=0.9, failover_ceiling=0.6)
 
 
 class TestGrowthStep:

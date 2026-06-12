@@ -65,10 +65,12 @@ UPPER_BOUND: Final[float] = 1.0 / PHI_SQUARED
 TARGET: Final[float] = (LOWER_BOUND + UPPER_BOUND) / 2.0
 
 #: The φ-conjugate — ``1/φ = φ - 1 ≈ 0.6180``: the fraction of capacity
-#: an entity maintains for itself, and equivalently the **debt line**.
-#: Sustained operation above it accrues compensation debt that peers
-#: must pick up (see ``substrate/debt_pickup.py`` and
-#: ``docs/concepts/resistance-band.md`` § "The layered zone model").
+#: an entity maintains for itself. It is the **top of the PEAKING /
+#: growth band**, the **WARNING-band floor**, and the **failover-spike
+#: ceiling** (a survivor may transiently spike toward it, then
+#: rebalance). It is **NOT the debt line** — that is :data:`DANGER_LINE`
+#: (``2/3``). See ``docs/concepts/resistance-band.md`` § "The layered
+#: zone model".
 PHI_CONJUGATE: Final[float] = 1.0 / PHI
 
 #: Vocabulary alias for :data:`PHI_CONJUGATE` — "the ~62% an entity is
@@ -80,6 +82,25 @@ MAINTAINED_CAPACITY: Final[float] = PHI_CONJUGATE
 #: too fast"); past the line a turnaround is expected (PEAKING) and the
 #: excursion is tolerable only sporadically.
 WORK_ZONE_UPPER: Final[float] = 0.5
+
+#: The WARNING-band floor / growth-peak ceiling — the φ-conjugate
+#: ``1/φ ≈ 0.6180``. Load in ``(0.5, 1/φ]`` is PEAKING (transient growth
+#: peaks build); load in ``(1/φ, 2/3]`` is WARNING (winded — the
+#: approach to burnout). Alias of :data:`PHI_CONJUGATE` for the
+#: zone-boundary reading.
+GROWTH_CEILING: Final[float] = PHI_CONJUGATE
+
+#: The debt / break line — ``2/3 ≈ 0.6667``, uniform across all
+#: quantities (resistance / work / growth). SUSTAINED operation past it
+#: is DEBT: breakdown / damage / compensation debt (peers pick up via
+#: ``substrate/debt_pickup.py``). Transient spikes past it are absorbed
+#: — the sustained-vs-spike call belongs to the ``SustainedLoadTracker``,
+#: not to geometry. The thirds ``1/3 + 2/3 = 1`` are a conjugate pair,
+#: mirror of the φ-conjugates.
+DANGER_LINE: Final[float] = 2.0 / 3.0
+
+#: Alias for :data:`DANGER_LINE` in the "last third" vocabulary.
+TWO_THIRDS: Final[float] = DANGER_LINE
 
 #: φ-proportioned growth-step ratio ("domino chain"): capacity raises
 #: by at most ~1.618x per step with consolidation between steps.
@@ -105,7 +126,7 @@ RESISTANCE_BAND_CLASSIFICATIONS: Final[frozenset[str]] = frozenset(
 
 
 class ZoneClassification(str, Enum):
-    """Five-valued layered-zone classification.
+    """Six-valued layered-zone classification.
 
     The legacy three-state model mislabels the work zone as STRESSED
     for WORK-type quantities; this enum carries the layered capacity
@@ -114,16 +135,19 @@ class ZoneClassification(str, Enum):
     - UNDER_LOADED ``< 1/3`` — the rest zone; legitimate for recovery.
     - CALIBRATION ``[1/3, 1/φ²]`` — work-entry threshold and the
       imposed-resistance setpoint (the legacy PRODUCTIVE band).
-    - WORKING ``(1/φ², 0.5]`` — genuinely productive sustained work.
-    - PEAKING ``(0.5, 1/φ]`` — sporadic-tolerable; turnaround expected.
-    - DEBT ``> 1/φ`` — sustained operation accrues compensation debt;
-      others pick up.
+    - WORKING ``(1/φ², 0.5]`` — the only indefinitely-sustainable cruise.
+    - PEAKING ``(0.5, 1/φ]`` — growth; TRANSIENT peaks build (intervals).
+    - WARNING ``(1/φ, 2/3]`` — winded; the approach to burnout; mirror
+      of CALIBRATION.
+    - DEBT ``> 2/3`` — SUSTAINED here accrues compensation debt; others
+      pick up. The debt line is ``2/3``, **never** ``1/φ``.
     """
 
     UNDER_LOADED = "under_loaded"
     CALIBRATION = "calibration"
     WORKING = "working"
     PEAKING = "peaking"
+    WARNING = "warning"
     DEBT = "debt"
 
 
@@ -138,6 +162,7 @@ _ZONE_TO_LEGACY: Final[dict["ZoneClassification", ResistanceBandClassification]]
     ZoneClassification.CALIBRATION: ResistanceBandClassification.PRODUCTIVE,
     ZoneClassification.WORKING: ResistanceBandClassification.STRESSED,
     ZoneClassification.PEAKING: ResistanceBandClassification.STRESSED,
+    ZoneClassification.WARNING: ResistanceBandClassification.STRESSED,
     ZoneClassification.DEBT: ResistanceBandClassification.STRESSED,
 }
 
@@ -268,13 +293,17 @@ def classify_zone(
     *,
     config: Optional[ResistanceBandConfig] = None,
 ) -> ZoneClassification:
-    """Return the five-valued layered-zone classification.
+    """Return the six-valued layered-zone classification.
 
     The calibration edges come from ``config`` (tighter-only, as with
-    :func:`classify`); the work-zone ceiling (0.5) and the φ-conjugate
-    debt line are substrate anchors and are not tunable. Boundaries:
-    calibration edges inclusive (matching :func:`classify`); the work
-    zone includes 0.5; DEBT is strictly above ``1/φ``.
+    :func:`classify`); the work-zone ceiling (0.5), the φ-conjugate
+    growth ceiling, and the ``2/3`` debt line are substrate anchors and
+    are not tunable. Boundaries: calibration edges inclusive (matching
+    :func:`classify`); the work zone includes 0.5; PEAKING is
+    ``(0.5, 1/φ]``; WARNING is ``(1/φ, 2/3]``; DEBT is strictly above
+    ``2/3``. This is the *geometric* zone — whether a DEBT-range reading
+    is actually accruing damage is the SUSTAINED-vs-spike call owned by
+    ``substrate/sustained_load.py``.
     """
     validate_utilization(utilization)
     cfg = config or DEFAULT_CONFIG
@@ -286,15 +315,17 @@ def classify_zone(
         return ZoneClassification.WORKING
     if utilization <= PHI_CONJUGATE:
         return ZoneClassification.PEAKING
+    if utilization <= DANGER_LINE:
+        return ZoneClassification.WARNING
     return ZoneClassification.DEBT
 
 
 def zone_to_legacy(zone: ZoneClassification) -> ResistanceBandClassification:
     """Project a layered zone onto the legacy three-state enum.
 
-    WORKING/PEAKING/DEBT all project to STRESSED — intentionally lossy;
-    persisted three-state consumers keep working unchanged while
-    five-state consumers opt in via :func:`classify_zone`.
+    WORKING/PEAKING/WARNING/DEBT all project to STRESSED — intentionally
+    lossy; persisted three-state consumers keep working unchanged while
+    layered-zone consumers opt in via :func:`classify_zone`.
     """
     return _ZONE_TO_LEGACY[zone]
 
@@ -302,33 +333,37 @@ def zone_to_legacy(zone: ZoneClassification) -> ResistanceBandClassification:
 def maintain_target(
     group_size: int,
     *,
-    debt_line: float = PHI_CONJUGATE,
+    failover_ceiling: float = PHI_CONJUGATE,
     ceiling: float = WORK_ZONE_UPPER,
 ) -> float:
     """Group-size-aware maintain-mode utilisation target for WORK quantities.
 
-    Derived from the debt line + peer-pickup math: after one peer of
-    ``group_size`` fails, each survivor takes ``u + u/(N-1)`` and must
-    stay at or under the debt line, so
-    ``u* = min(ceiling, debt_line * (N-1)/N)``. Small groups cruise
-    lighter (N=2 → ≈0.309); larger groups earn the work zone (N≥6 →
-    the 0.5 ceiling). ``group_size == 1`` has no pickup peer — the
-    failover constraint is vacuous, so the conservative
+    Derived from the failover-spike math: after one peer of
+    ``group_size`` fails, each survivor *transiently* takes
+    ``u + u/(N-1)`` and must stay at or under the **failover-spike
+    ceiling** ``1/φ`` (the φ-conjugate — NOT the ``2/3`` debt line; the
+    spike is transient and then rebalances), so
+    ``u* = min(ceiling, failover_ceiling * (N-1)/N)``. Small groups
+    cruise lighter (N=2 → ≈0.309); larger groups earn the work zone
+    (N≥6 → the 0.5 ceiling). ``group_size == 1`` has no pickup peer —
+    the failover constraint is vacuous, so the conservative
     calibration-band :data:`TARGET` is returned. Applies to fungible,
     transferable resources; hard-fail resources (memory) carry their
     own band instance and semantics.
     """
     if group_size < 1:
         raise ValueError(f"group_size must be >= 1; got {group_size!r}")
-    if not 0.0 < debt_line <= 1.0:
-        raise ValueError(f"debt_line must be in (0, 1]; got {debt_line!r}")
-    if not 0.0 < ceiling <= debt_line:
+    if not 0.0 < failover_ceiling <= 1.0:
         raise ValueError(
-            f"ceiling must be in (0, debt_line]; got {ceiling!r}"
+            f"failover_ceiling must be in (0, 1]; got {failover_ceiling!r}"
+        )
+    if not 0.0 < ceiling <= failover_ceiling:
+        raise ValueError(
+            f"ceiling must be in (0, failover_ceiling]; got {ceiling!r}"
         )
     if group_size == 1:
         return TARGET
-    return min(ceiling, debt_line * (group_size - 1) / group_size)
+    return min(ceiling, failover_ceiling * (group_size - 1) / group_size)
 
 
 @dataclass(frozen=True, slots=True)
@@ -487,7 +522,9 @@ def _render_reasoning(
     )
 
 __all__ = [
+    "DANGER_LINE",
     "DEFAULT_CONFIG",
+    "GROWTH_CEILING",
     "GROWTH_STEP_RATIO",
     "GrowthStepAssessment",
     "LOWER_BOUND",
@@ -501,6 +538,7 @@ __all__ = [
     "ResistanceBandClassification",
     "ResistanceBandConfig",
     "TARGET",
+    "TWO_THIRDS",
     "UPPER_BOUND",
     "WORK_ZONE_UPPER",
     "ZONE_CLASSIFICATIONS",

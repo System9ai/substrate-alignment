@@ -76,7 +76,7 @@ class ClimbTermination(str, Enum):
     NET_NEGATIVE = "net_negative"  # a step scored NET_NEGATIVE — refused
     INSUFFICIENT_DATA = "insufficient_data"  # a step could not be scored
     OBJECTIVE_UNCERTIFIED = "objective_uncertified"  # wrong/unscorable hill
-    DEBT_LIMIT = "debt_limit"  # sustained load past the φ-conjugate
+    DEBT_LIMIT = "debt_limit"  # sustained load past the 2/3 debt line
     RUNAWAY = "runaway"  # growth streak without consolidation
     PEAKING_EXHAUSTED = "peaking_exhausted"  # sporadic tolerance spent
     MAX_STEPS = "max_steps"  # step budget exhausted
@@ -415,7 +415,7 @@ class GovernedAscentLoop:  # pylint: disable=too-few-public-methods
             return (
                 ClimbTermination.DEBT_LIMIT,
                 (
-                    f"step {step_index} load past the φ-conjugate debt "
+                    f"step {step_index} load past the 2/3 debt "
                     f"line sustained — {assessment.reasoning}"
                 ),
             )
@@ -442,7 +442,11 @@ class GovernedAscentLoop:  # pylint: disable=too-few-public-methods
         zone: ZoneClassification,
     ) -> Optional[_Outcome]:
         """Bound consecutive PEAKING/DEBT-zone excursions (sporadic only)."""
-        if zone in (ZoneClassification.PEAKING, ZoneClassification.DEBT):
+        if zone in (
+            ZoneClassification.PEAKING,
+            ZoneClassification.WARNING,
+            ZoneClassification.DEBT,
+        ):
             state.consecutive_peaking += 1
             state.peaking_steps += 1
             if state.consecutive_peaking > self._config.max_consecutive_peaking:

@@ -197,18 +197,18 @@ _ZONE_TO_LEGACY: Final[dict[LoadZone, ZoneClassification]] = {
     LoadZone.IDLE: ZoneClassification.UNDER_LOADED,
     LoadZone.RECREATION: ZoneClassification.CALIBRATION,
     LoadZone.WORK: ZoneClassification.WORKING,
-    LoadZone.PEAKING: ZoneClassification.WORKING,
-    LoadZone.WARNING: ZoneClassification.PEAKING,
+    LoadZone.PEAKING: ZoneClassification.PEAKING,
+    LoadZone.WARNING: ZoneClassification.WARNING,
     LoadZone.DANGER: ZoneClassification.DEBT,
 }
 
 
 def zone_to_legacy(zone: LoadZone) -> ZoneClassification:
-    """Project a :class:`LoadZone` to the legacy 5-band classification.
+    """Project a :class:`LoadZone` to the persisted :class:`ZoneClassification`.
 
-    Serialization / wire compatibility for consumers on the older layered-zone
-    enum. The projection is exact and lossy-by-design (the new PEAKING growth zone
-    maps to legacy WORKING; new WARNING → legacy PEAKING; new DANGER → legacy DEBT).
+    Serialization / wire compatibility. Now **1:1** (``ZoneClassification``
+    carries the WARNING band): IDLE→UNDER_LOADED, RECREATION→CALIBRATION,
+    WORK→WORKING, PEAKING→PEAKING, WARNING→WARNING, DANGER→DEBT. No shims.
     """
     return _ZONE_TO_LEGACY[zone]
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import pytest
 
+from substrate.resistance_band import LOWER_BOUND
 from substrate.signals.state_signal_generator import (
     DEFAULT_STATE_SIGNAL_CONFIG,
     StateSignalConfig,
@@ -136,6 +137,44 @@ class TestResistanceBandSignals:
         out = self.g.generate("alice", _obs(challenge=0.9))
         assert out.has_signal(StateSignalKind.OVER_CHALLENGE)
 
+    def test_work_zone_is_productive(self) -> None:
+        # Layered zone model: 0.38-0.50 is the WORK zone — challenge at
+        # 0.45 is healthy productive work ("in the zone but not rising
+        # too fast"), NOT a band breach. The sweet spot (calibration
+        # band, 0.33-0.38) is the work-entry threshold.
+        out = self.g.generate("alice", _obs(challenge=0.45))
+        assert out.has_signal(StateSignalKind.PRODUCTIVE_RESISTANCE)
+        assert not out.has_signal(StateSignalKind.SWEET_SPOT)
+        assert not out.has_signal(StateSignalKind.PEAKING)
+
+    def test_peaking_spans_half_line_to_conjugate(self) -> None:
+        # Peaking zone is (0.5, 0.618): allowed sporadically; past the
+        # 0.5 line a turnaround is expected; never sustained.
+        for challenge in (0.51, 0.55, 0.61):
+            out = self.g.generate("alice", _obs(challenge=challenge))
+            assert out.has_signal(StateSignalKind.PEAKING), challenge
+            assert not out.has_signal(
+                StateSignalKind.PRODUCTIVE_RESISTANCE
+            ), challenge
+            assert not out.has_signal(StateSignalKind.OVER_CHALLENGE), (
+                challenge
+            )
+
+    def test_over_challenge_starts_at_two_thirds(self) -> None:
+        # The debt line is the uniform 2/3 ≈ 0.667 — 0.62 is the WARNING
+        # band (winded), not yet debt; only past 2/3 is OVER_CHALLENGE.
+        warn = self.g.generate("alice", _obs(challenge=0.62))
+        assert not warn.has_signal(StateSignalKind.OVER_CHALLENGE)
+        out = self.g.generate("alice", _obs(challenge=0.70))
+        assert out.has_signal(StateSignalKind.OVER_CHALLENGE)
+        assert not out.has_signal(StateSignalKind.PEAKING)
+
+    def test_peaking_zone_must_exist_between_work_and_debt_line(self) -> None:
+        with pytest.raises(ValueError):
+            StateSignalConfig(
+                productive_resistance_max=0.7, over_challenge_min=0.618,
+            )
+
 class TestAffectiveSignals:
     def setup_method(self) -> None:
         self.g = SubstrateStateSignalGenerator()
@@ -205,4 +244,4 @@ class TestReportProperties:
 
     def test_default_config_singleton(self) -> None:
         cfg = DEFAULT_STATE_SIGNAL_CONFIG
-        assert cfg.sweet_spot_min == 0.33
+        assert cfg.sweet_spot_min == LOWER_BOUND

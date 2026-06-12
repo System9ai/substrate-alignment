@@ -295,12 +295,12 @@ class TestTerminations:
         trajectory = loop.climb(
             objective=_objective(),
             step_generator=lambda i: _proposal(),
-            load_observer=_steady_observer(0.70),  # past 1/φ every step
+            load_observer=_steady_observer(0.70),  # past 2/3 every step
         )
         # Default sustain_count=3: the third consecutive above-debt
         # observation flips the trend to DEBT_ACCRUING.
         assert trajectory.termination is ClimbTermination.DEBT_LIMIT
-        assert "φ-conjugate" in trajectory.terminal_reasoning
+        assert "2/3" in trajectory.terminal_reasoning
 
     def test_growth_streak_without_consolidation_is_runaway(self) -> None:
         spy = _ConsolidationSpy()
@@ -325,6 +325,21 @@ class TestTerminations:
             load_observer=_steady_observer(0.55),  # PEAKING zone every step
         )
         # max_consecutive_peaking=2 → the third consecutive excursion stops.
+        assert trajectory.termination is ClimbTermination.PEAKING_EXHAUSTED
+        assert trajectory.step_count == 2
+        assert trajectory.peaking_steps == 3
+
+    def test_warning_band_excursions_also_bounded(self) -> None:
+        # The WARNING band (0.618, 2/3] is winded — counted with PEAKING
+        # as a sporadic-only excursion: sustained 0.65 exhausts the budget
+        # before it would ever accrue debt.
+        spy = _ConsolidationSpy()
+        loop = _loop(npg_script=[_POSITIVE], spy=spy)
+        trajectory = loop.climb(
+            objective=_objective(),
+            step_generator=lambda i: _proposal(),
+            load_observer=_steady_observer(0.65),  # WARNING zone every step
+        )
         assert trajectory.termination is ClimbTermination.PEAKING_EXHAUSTED
         assert trajectory.step_count == 2
         assert trajectory.peaking_steps == 3

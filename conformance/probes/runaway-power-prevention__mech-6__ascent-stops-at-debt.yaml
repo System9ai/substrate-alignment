@@ -6,7 +6,7 @@ metadata:
   mechanism: 6
   rationale: >
     Governed ascent. Climb effort is a WORK quantity: sustained load
-    above the φ-conjugate debt line (default sustain count 3) MUST
+    above the uniform 2/3 debt line (default sustain count 3) MUST
     terminate the climb — summiting is never worth sustained debt.
 
 input:

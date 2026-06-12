@@ -4,7 +4,7 @@ from __future__ import annotations
 import pytest
 
 from substrate.resistance_band import (
-    PHI_CONJUGATE,
+    DANGER_LINE,
     WORK_ZONE_UPPER,
 )
 from substrate.sustained_load import (
@@ -73,6 +73,17 @@ class TestSpikeVsSustained:
         # no debt units.
         assert out.accrued_debt_units == 0.0
 
+    def test_sustained_in_warning_band_is_winded(self) -> None:
+        # 0.64 ∈ (1/φ, 2/3): sustained = WINDED (the winded approach to
+        # burnout), NOT debt — debt accrues only past the 2/3 line.
+        tracker = SustainedLoadTracker()
+        out = None
+        for t in range(4):
+            out = tracker.observe(_obs(t, 0.64))
+        assert out is not None
+        assert out.trend is LoadTrend.WINDED
+        assert out.accrued_debt_units == 0.0
+
     def test_spike_decays_back_to_nominal(self) -> None:
         tracker = SustainedLoadTracker()
         tracker.observe(_obs(0, 0.55))
@@ -84,20 +95,21 @@ class TestSpikeVsSustained:
 
 
 class TestDebtAccrual:
-    def test_sustained_above_conjugate_accrues_debt(self) -> None:
+    def test_sustained_above_debt_line_accrues_debt(self) -> None:
         tracker = SustainedLoadTracker()
         out = None
         for t in range(4):
             out = tracker.observe(_obs(t, 0.70))
         assert out is not None
         assert out.trend is LoadTrend.DEBT_ACCRUING
-        # Accrual = (util - debt_line) per sustained observation.
-        expected_per_obs = 0.70 - PHI_CONJUGATE
+        # Accrual = (util - debt_line) per sustained observation; the
+        # debt line is the uniform 2/3 (DANGER_LINE), not 1/φ.
+        expected_per_obs = 0.70 - DANGER_LINE
         assert out.accrued_debt_units == pytest.approx(
             expected_per_obs * 2  # observations 3 and 4 (streak >= 3)
         )
 
-    def test_brief_excursion_above_conjugate_is_not_debt(self) -> None:
+    def test_brief_excursion_above_debt_line_is_not_debt(self) -> None:
         tracker = SustainedLoadTracker()
         tracker.observe(_obs(0, 0.45))
         out = tracker.observe(_obs(1, 0.70))
@@ -173,4 +185,4 @@ class TestAnchors:
     def test_defaults_use_substrate_anchors(self) -> None:
         cfg = SustainedLoadConfig()
         assert cfg.spike_line == WORK_ZONE_UPPER
-        assert cfg.debt_line == PHI_CONJUGATE
+        assert cfg.debt_line == DANGER_LINE

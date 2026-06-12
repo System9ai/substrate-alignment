@@ -44,6 +44,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Final, Mapping, Optional, Tuple
 
+from substrate.resistance_band import DANGER_LINE, LOWER_BOUND, UPPER_BOUND
+
 class StateSignalKind(str, Enum):
     """The substrate-state signal vocabulary."""
 
@@ -174,19 +176,21 @@ class StateSignalConfig:  # pylint: disable=too-many-instance-attributes
     flow_success_min: float = 0.7
     flow_challenge_min: float = 0.3
     flow_challenge_max: float = 0.6
-    sweet_spot_min: float = 0.33
-    sweet_spot_max: float = 0.38
-    # The productive span (layered zone model): the 33-38% calibration
-    # band is the work-ENTRY threshold; 0.38-0.50 is the WORK zone —
+    sweet_spot_min: float = LOWER_BOUND
+    sweet_spot_max: float = UPPER_BOUND
+    # The productive span (layered zone model): the 1/3-1/φ² calibration
+    # band is the work-ENTRY threshold; 1/φ²-0.50 is the WORK zone —
     # genuinely productive sustained effort. The span ends at the 0.5
     # line: past it a turnaround is expected (PEAKING, sporadic-only).
-    productive_resistance_min: float = 0.33
+    productive_resistance_min: float = LOWER_BOUND
     productive_resistance_max: float = 0.5
     under_challenge_max: float = 0.2
-    # phi-conjugate debt threshold (1/phi ~= 0.618), not an ad-hoc 0.7:
-    # at or beyond this, sustained challenge accrues compensation debt.
-    # Between productive_resistance_max and this line sits PEAKING.
-    over_challenge_min: float = 0.618
+    # 2/3 debt line (uniform across quantities), not an ad-hoc 0.7 nor
+    # the old 0.618: at or beyond this, SUSTAINED challenge accrues
+    # compensation debt. Between productive_resistance_max (0.5) and this
+    # line sit PEAKING (0.5-0.618 growth) then the WARNING band
+    # (0.618-2/3 winded).
+    over_challenge_min: float = DANGER_LINE
     hunger_novelty_max: float = 0.3
     saturation_load_min: float = 0.7
     coupling_healthy_min: float = 0.5
@@ -363,7 +367,7 @@ class SubstrateStateSignalGenerator:  # pylint: disable=too-few-public-methods
     def _peaking(
         self, obs: StateSignalObservation,
     ) -> Optional[StateSignal]:
-        """Past the 0.5 line, below the φ-conjugate debt line.
+        """Past the 0.5 line, below the φ-conjugate growth ceiling.
 
         Peaking is allowed sporadically — past the 50% line a
         turnaround is usually coming. The signal feeds interpretation;
@@ -385,7 +389,7 @@ class SubstrateStateSignalGenerator:  # pylint: disable=too-few-public-methods
                     f"challenge={obs.challenge_level:.3f} in "
                     f"({cfg.productive_resistance_max}, "
                     f"{cfg.over_challenge_min}) — past the 0.5 work-zone "
-                    "line, below the φ-conjugate debt threshold; "
+                    "line, below the 2/3 debt line; "
                     "sporadic-tolerable, turnaround expected"
                 ),
             )

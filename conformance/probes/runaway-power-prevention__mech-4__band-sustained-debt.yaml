@@ -6,11 +6,12 @@ metadata:
   mechanism: 4
   rationale: >
     Layered-model temporal contract. Sustained operation above the
-    φ-conjugate debt line (1/φ ≈ 0.618) MUST accrue compensation debt —
+    uniform 2/3 debt line (≈ 0.667) MUST accrue compensation debt —
     a classification or alarm alone is non-conforming; the
     implementation must expose accrued debt units so a compensation
     path (peer pickup / recovery / capacity grant / escalation) can
-    repay them.
+    repay them. The φ-conjugate (1/φ ≈ 0.618) is the PEAKING/WARNING
+    boundary, NOT the debt line.
 
 input:
   mechanism: sustained-load
