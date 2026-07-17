@@ -1,0 +1,22 @@
+spec: evidence-grade
+spec_version: ">=0.2"
+scenario: single-source-unverified-hearsay
+required: true
+metadata:
+  rationale: >
+    A single attestation without verified provenance MUST classify as
+    UNVERIFIED_HEARSAY (spec § 3 step 6 rule a / default base).
+
+input:
+  fn: compose_evidence_grade
+  now_epoch_seconds: 1700000000
+  attestations:
+    - source_id: source-1
+      observed_at_epoch_seconds: 1700000000
+      provenance_verified: false
+
+expected:
+  grade: unverified_hearsay
+  attestation_count: 1
+  unique_source_count: 1
+  provenance_verified_count: 0

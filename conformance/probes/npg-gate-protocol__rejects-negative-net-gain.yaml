@@ -1,0 +1,29 @@
+spec: npg-gate-protocol
+spec_version: ">=0.1"
+scenario: rejects-negative-net-gain
+required: true
+metadata:
+  rationale: >
+    When the caller supplies expected_delta_by_entity with negative values
+    summing to less than -positive_threshold, the gate MUST return
+    NET_NEGATIVE with a negative score.
+
+setup:
+  store:
+    - { entity_type: user, entity_id: a }
+    - { entity_type: user, entity_id: b }
+
+input:
+  actor: { entity_type: agent, entity_id: actor-1 }
+  action_kind: anything
+  affected_entities:
+    - { entity_type: user, entity_id: a }
+    - { entity_type: user, entity_id: b }
+  proposed_outcome:
+    expected_delta_by_entity:
+      a: -0.5
+      b: -0.5
+
+expected:
+  verdict: net_negative
+  score_lt: 0.0

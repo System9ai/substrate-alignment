@@ -1,0 +1,1 @@
+"""Consequence-exposure chain."""

@@ -1,0 +1,65 @@
+name: Docs
+
+on:
+  push:
+    branches: [main]
+  # Allow manual runs from the Actions tab.
+  workflow_dispatch:
+
+# Least privilege: build reads the repo; deploy publishes to Pages via OIDC.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One in-flight deployment at a time; do not cancel a running publish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: python/pyproject.toml
+
+      - name: Install docs toolchain
+        # mkdocstrings imports the package, so install it too.
+        run: pip install -e "./python[docs]"
+
+      - name: Build
+        # mkdocs.yml lives at the repository root (docs_dir: .).
+        run: mkdocs build --site-dir _site
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    name: Deploy to Pages
+    needs: build
+    runs-on: ubuntu-latest
+    # A workflow token cannot enable Pages; that is a one-time repo-admin action
+    # (Settings > Pages > Build and deployment > Source: "GitHub Actions").
+    # Until Pages is enabled, deploy-pages 404s, so this job is best-effort and
+    # does not fail the run. The Build job above is the real gate: it validates
+    # that the docs site builds on every push. Once Pages is enabled, this job
+    # publishes automatically.
+    continue-on-error: true
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

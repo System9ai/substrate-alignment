@@ -1,0 +1,26 @@
+spec: runaway-power-prevention
+spec_version: ">=0.2"
+scenario: mech-4__band-zone-peaking
+required: true
+metadata:
+  mechanism: 4
+  rationale: >
+    Layered zones. Past the 0.5 line a turnaround is expected: the
+    coarse PEAKING band (0.5, 1/φ] is tolerable sporadically, never
+    sustained. (1/φ, 2/3] is WARNING; only above 2/3 is DEBT. 0.55
+    MUST classify as peaking, NOT debt.
+
+    The band splits at the inner ninth 5/9 (0.5556): EARLY_PEAKING is
+    (0.5, 5/9] and COMMITTED_PEAKING is (5/9, 1/φ]. 0.55 falls in the
+    first, so the level is `early_peaking`. This probe expected the
+    pre-split `peaking`, which is no longer a ZoneClassification member,
+    so it raised ValueError and, because the runner surfaces the first
+    failure, it MASKED EVERY PROBE AFTER IT. The coarse band is still a
+    real grouping; only the level name is finer.
+
+input:
+  mechanism: resistance-band
+  utilization: 0.55
+
+expected:
+  zone: early_peaking

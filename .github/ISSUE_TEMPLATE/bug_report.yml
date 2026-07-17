@@ -1,0 +1,66 @@
+name: Bug report
+description: Report incorrect behavior of a primitive or a specification mismatch.
+labels: [bug, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. Please fill in the sections
+        below so we can reproduce the issue quickly.
+
+        If you are reporting a security vulnerability, **do not** use this form.
+        Use [Security Advisories](https://github.com/System9ai/substrate-alignment/security/advisories/new) instead.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What were you expecting? What happened instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: |
+        Minimal code, scenario, or failing test that triggers the bug. Please
+        keep it focused: strip out anything that is not load-bearing for the
+        repro.
+      render: python
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: substrate-alignment version
+      placeholder: "0.2.0.dev0"
+    validations:
+      required: true
+
+  - type: input
+    id: python
+    attributes:
+      label: Python version
+      placeholder: "3.12.x"
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: "Ubuntu 24.04 / macOS 14 / Windows 11"
+    validations:
+      required: true
+
+  - type: textarea
+    id: spec-ref
+    attributes:
+      label: Specification reference (optional)
+      description: |
+        If this is a conformance issue, which `spec/...md` document covers the
+        affected behavior?
+    validations:
+      required: false

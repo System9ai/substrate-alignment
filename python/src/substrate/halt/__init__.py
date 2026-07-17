@@ -1,0 +1,1 @@
+"""Halt-and-escalate infrastructure."""

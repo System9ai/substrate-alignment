@@ -1,0 +1,1 @@
+"""Cross-entity observation + interpretation."""

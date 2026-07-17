@@ -1,0 +1,18 @@
+spec: npg-gate-protocol
+spec_version: ">=0.1"
+scenario: actor-only-is-neutral
+required: true
+metadata:
+  rationale: >
+    An action with no affected entities MUST short-circuit to NET_NEUTRAL.
+    The net-potential-gain test asks about effect on *other* entities; a
+    self-action carries no net effect across the system.
+
+input:
+  actor: { entity_type: agent, entity_id: actor-1 }
+  action_kind: anything
+  affected_entities: []
+  proposed_outcome: {}
+
+expected:
+  verdict: net_neutral

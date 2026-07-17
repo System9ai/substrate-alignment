@@ -1,0 +1,28 @@
+spec: runaway-power-prevention
+spec_version: ">=0.1"
+scenario: mech-2__hash-chain-valid
+required: true
+metadata:
+  mechanism: 2
+  rationale: >
+    Mechanism 2, Tamper-evident audit chain. A sequence of records
+    appended through the documented API MUST produce a ledger whose
+    verify() returns ok=true and length matching the number of appends.
+
+input:
+  mechanism: audit-chain
+  scenario: hash-continuity
+  appends:
+    - { decision_id: d1, decision_kind: npg_gate, permitted: true,
+        rationale: "demo append #1",
+        npg_verdict: net_positive, resistance_band: productive }
+    - { decision_id: d2, decision_kind: npg_gate, permitted: false,
+        rationale: "demo append #2",
+        npg_verdict: net_negative, resistance_band: stressed }
+    - { decision_id: d3, decision_kind: capability_grant, permitted: true,
+        rationale: "demo append #3",
+        npg_verdict: net_neutral, resistance_band: productive }
+
+expected:
+  valid: true
+  length: 3

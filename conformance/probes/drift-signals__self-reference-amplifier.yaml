@@ -1,0 +1,20 @@
+spec: drift-signals
+spec_version: ">=0.1"
+scenario: self-reference-amplifier
+required: true
+metadata:
+  rationale: >
+    Signals indicating self-reference miscalibration (high self-reference
+    ratio, low external reference count) MUST be detected, and the report
+    MUST flag amplifier_pattern_present=true (this is the master pattern
+    that licenses every other drift).
+
+input:
+  structured_signals:
+    self_reference_ratio: 0.9
+    external_reference_count: 0
+    alignment_vector_drift_self_pointing: 0.8
+
+expected:
+  contains_pattern: [self_reference_miscalibration]
+  amplifier_pattern_present: true

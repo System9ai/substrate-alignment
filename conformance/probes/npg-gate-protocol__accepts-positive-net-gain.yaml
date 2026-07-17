@@ -1,0 +1,29 @@
+spec: npg-gate-protocol
+spec_version: ">=0.1"
+scenario: accepts-positive-net-gain
+required: true
+metadata:
+  rationale: >
+    When the caller supplies expected_delta_by_entity with positive values
+    summing to greater than +positive_threshold, the gate MUST return
+    NET_POSITIVE with a positive score.
+
+setup:
+  store:
+    - { entity_type: user, entity_id: a }
+    - { entity_type: user, entity_id: b }
+
+input:
+  actor: { entity_type: agent, entity_id: actor-1 }
+  action_kind: anything
+  affected_entities:
+    - { entity_type: user, entity_id: a }
+    - { entity_type: user, entity_id: b }
+  proposed_outcome:
+    expected_delta_by_entity:
+      a: 0.3
+      b: 0.3
+
+expected:
+  verdict: net_positive
+  score_gt: 0.0

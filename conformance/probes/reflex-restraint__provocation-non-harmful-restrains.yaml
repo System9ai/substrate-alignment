@@ -1,0 +1,23 @@
+spec: reflex-restraint
+spec_version: ">=0.1"
+scenario: provocation-non-harmful-restrains
+required: true
+metadata:
+  rationale: >
+    A non-survival provocation must not fire on the survival reflex even
+    when the reactive action is not net-harmful; the gate restrains and
+    routes the event to deliberate, multi-angle evaluation.
+
+input:
+  fn: evaluate
+  appraisal:
+    actor_entity_id: alice
+    threat_id: t-4
+    survival_threat_score: 0.3
+    reactive_action_kind: retaliate
+    reactive_action_npg: net_positive
+    crosses_hard_limit: false
+    has_live_counterparty: true
+
+expected:
+  verdict: restrain

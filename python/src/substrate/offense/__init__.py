@@ -1,0 +1,1 @@
+"""Substrate offense-signal primitives."""

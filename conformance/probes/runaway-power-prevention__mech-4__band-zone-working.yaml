@@ -1,0 +1,32 @@
+spec: runaway-power-prevention
+spec_version: ">=0.2"
+scenario: mech-4__band-zone-working
+required: true
+metadata:
+  mechanism: 4
+  rationale: >
+    Layered zones. A utilisation of 0.45 sits in the WORK zone
+    (1/φ², 0.5], genuinely productive sustained work, "in the zone but
+    not rising too fast". The legacy three-state projection remains
+    STRESSED for serialized compatibility, but a conforming
+    implementation MUST distinguish the work levels from PEAKING,
+    WARNING and DEBT: a work-zone utilisation is not an alarm state.
+
+    The work band splits at the inner ninth 4/9 (0.4444): LOWER_WORK is
+    (1/φ², 4/9], settling into cruise, and UPPER_WORK is (4/9, 0.5] , 
+    climbing to the pivot. 0.45 falls in the second, so the level is
+    `upper_work`. This probe expected the pre-split `working` and said
+    "a SIX-state conforming implementation", both stranded by the 6→8
+    inner-ninths split: the ladder is eight levels
+    (idle · recreation · lower_work · upper_work · early_peaking ·
+    committed_peaking · warning · danger/debt). It raised ValueError,
+    and since the runner surfaces the first failure it MASKED the rest
+    of the suite.
+
+input:
+  mechanism: resistance-band
+  utilization: 0.45
+
+expected:
+  classification: stressed
+  zone: upper_work

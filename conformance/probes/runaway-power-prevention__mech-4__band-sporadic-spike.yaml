@@ -1,0 +1,19 @@
+spec: runaway-power-prevention
+spec_version: ">=0.2"
+scenario: mech-4__band-sporadic-spike
+required: true
+metadata:
+  mechanism: 4
+  rationale: >
+    Layered-model temporal contract. A single excursion past the 0.5 line is
+    a SPIKE, tolerable sporadically, expected to decay, and MUST NOT
+    accrue debt. Conflating sporadic spikes with sustained debt
+    over-penalises healthy peak absorption.
+
+input:
+  mechanism: sustained-load
+  utilization_sequence: [0.42, 0.45, 0.70]
+
+expected:
+  trend: spike
+  debt_accrued: false

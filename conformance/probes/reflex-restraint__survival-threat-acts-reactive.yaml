@@ -1,0 +1,23 @@
+spec: reflex-restraint
+spec_version: ">=0.1"
+scenario: survival-threat-acts-reactive
+required: true
+metadata:
+  rationale: >
+    Survival mode has its place: at a genuine survival-level threat the
+    fast reflex is substrate-aligned even when the reactive action is
+    net-negative.
+
+input:
+  fn: evaluate
+  appraisal:
+    actor_entity_id: alice
+    threat_id: t-1
+    survival_threat_score: 0.95
+    reactive_action_kind: retaliate
+    reactive_action_npg: net_negative
+    crosses_hard_limit: false
+    has_live_counterparty: true
+
+expected:
+  verdict: act_reactive

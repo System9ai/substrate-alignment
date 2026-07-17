@@ -1,0 +1,24 @@
+spec: runaway-power-prevention
+spec_version: ">=0.2"
+scenario: mech-6__ascent-stops-at-debt
+required: true
+metadata:
+  mechanism: 6
+  rationale: >
+    Governed ascent. Climb effort is a WORK quantity: sustained load
+    above the uniform 2/3 debt line (default sustain count 3) MUST
+    terminate the climb, summiting is never worth sustained debt.
+
+input:
+  mechanism: governed-ascent
+  objective_certified: true
+  steps:
+    - {verdict: net_positive, score: 0.2}
+    - {verdict: net_positive, score: 0.2}
+    - {verdict: net_positive, score: 0.2}
+    - {verdict: net_positive, score: 0.2}
+  utilization_sequence: [0.70, 0.70, 0.70, 0.70]
+
+expected:
+  termination: debt_limit
+  consolidated: true
