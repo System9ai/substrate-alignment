@@ -1,0 +1,15 @@
+spec: operating-mode
+spec_version: ">=0.1"
+scenario: mixed-classification
+required: true
+metadata:
+  rationale: >
+    A net_potential between mixed_threshold (0.40) and long_cycle_threshold
+    (0.70) MUST classify as MIXED.
+
+input:
+  fn: auto_classify_mode
+  net_potential: 0.55
+
+expected:
+  mode: Mixed

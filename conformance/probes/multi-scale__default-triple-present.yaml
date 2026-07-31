@@ -1,0 +1,24 @@
+spec: multi-scale
+spec_version: ">=0.3"
+scenario: default-triple-present
+required: true
+metadata:
+  rationale: >
+    A fresh registry MUST contain exactly the canonical default
+    scope triple (cell, node, org) per spec § 2.2; each at the
+    correct position in the parent chain.
+
+input:
+  fn: assert_default_triple
+
+expected:
+  scope_names:
+    - cell
+    - node
+    - org
+  cell_parent: node
+  node_parent: org
+  org_parent: null
+  cell_aggregating: false
+  node_aggregating: true
+  org_aggregating: true

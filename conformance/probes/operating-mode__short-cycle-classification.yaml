@@ -1,0 +1,14 @@
+spec: operating-mode
+spec_version: ">=0.1"
+scenario: short-cycle-classification
+required: true
+metadata:
+  rationale: >
+    A non-zero net_potential below mixed_threshold MUST classify as SHORT_CYCLE.
+
+input:
+  fn: auto_classify_mode
+  net_potential: 0.20
+
+expected:
+  mode: ShortCycle

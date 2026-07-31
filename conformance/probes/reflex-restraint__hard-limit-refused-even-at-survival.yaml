@@ -1,0 +1,22 @@
+spec: reflex-restraint
+spec_version: ">=0.1"
+scenario: hard-limit-refused-even-at-survival
+required: true
+metadata:
+  rationale: >
+    A hard limit is never overridable by survival pressure: even a
+    genuine survival reflex that crosses a hard limit is refused.
+
+input:
+  fn: evaluate
+  appraisal:
+    actor_entity_id: alice
+    threat_id: t-2
+    survival_threat_score: 1.0
+    reactive_action_kind: retaliate
+    reactive_action_npg: net_negative
+    crosses_hard_limit: true
+    has_live_counterparty: true
+
+expected:
+  verdict: refuse_hard_limit

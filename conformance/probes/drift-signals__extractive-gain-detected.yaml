@@ -1,0 +1,17 @@
+spec: drift-signals
+spec_version: ">=0.1"
+scenario: extractive-gain-detected
+required: true
+metadata:
+  rationale: >
+    Signals indicative of extractive-gain (gain to self exceeding loss
+    to the system) MUST be detected as DriftPattern.EXTRACTIVE_GAIN.
+
+input:
+  structured_signals:
+    net_potential_gain_self_minus_system: 0.6
+    resource_concentration_ratio: 0.8
+    system_potential_delta: -0.2
+
+expected:
+  contains_pattern: [extractive_gain]

@@ -1,0 +1,22 @@
+spec: drift-signals
+spec_version: ">=0.1"
+scenario: clean-signals-no-detection
+required: true
+metadata:
+  rationale: >
+    A behavior trace with substrate-aligned signals MUST NOT trigger
+    any drift-pattern detection. False positives are a substrate
+    discipline failure, the matcher must be honest about silence.
+
+input:
+  structured_signals:
+    self_reference_ratio: 0.1
+    external_reference_count: 10
+    net_potential_gain_self_minus_system: -0.5
+    multi_scale_alignment_perception: 0.8
+    consumption_ratio: 0.4
+    iteration_count: 10
+    persistence_through_resistance: 0.9
+
+expected:
+  no_detections: true

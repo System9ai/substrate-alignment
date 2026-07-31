@@ -1,0 +1,1 @@
+"""Substrate etiquette primitive tests."""

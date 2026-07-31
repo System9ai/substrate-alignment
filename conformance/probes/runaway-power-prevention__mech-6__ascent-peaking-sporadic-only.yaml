@@ -1,0 +1,26 @@
+spec: runaway-power-prevention
+spec_version: ">=0.2"
+scenario: mech-6__ascent-peaking-sporadic-only
+required: true
+metadata:
+  mechanism: 6
+  rationale: >
+    Governed ascent. PEAKING-zone excursions (past the 0.5 work-zone
+    ceiling) are tolerable sporadically only: consecutive excursions
+    beyond the sporadic budget (default 2) MUST terminate the climb , 
+    past the 0.5 line a turnaround is expected.
+
+input:
+  mechanism: governed-ascent
+  objective_certified: true
+  steps:
+    - {verdict: net_positive, score: 0.2}
+    - {verdict: net_positive, score: 0.2}
+    - {verdict: net_positive, score: 0.2}
+    - {verdict: net_positive, score: 0.2}
+  utilization_sequence: [0.55, 0.55, 0.55, 0.55]
+
+expected:
+  termination: peaking_exhausted
+  step_count: 2
+  consolidated: true

@@ -1,0 +1,26 @@
+spec: multi-scale
+spec_version: ">=0.3"
+scenario: cycle-rejected
+required: true
+metadata:
+  rationale: >
+    A register() call that would close a cycle in the parent chain
+    MUST raise ValueError per spec § 2.4 / § 3 step 3. Scenario:
+    register A → cell; register B → A; attempt to register a new
+    scope ``loop`` whose parent_name is ``loop`` (self-cycle).
+    Implementations MUST reject self-cycles as well as longer cycles.
+
+input:
+  fn: assert_cycle_rejected
+  scope:
+    name: loop
+    display_name: Loop
+    parent_name: loop
+    aggregating: false
+
+expected:
+  raises: true
+  registry_contains:
+    - cell
+    - node
+    - org

@@ -1,0 +1,1 @@
+"""Substrate trust primitive tests."""

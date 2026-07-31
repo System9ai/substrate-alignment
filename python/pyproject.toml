@@ -1,0 +1,187 @@
+[build-system]
+requires = ["hatchling>=1.21"]
+build-backend = "hatchling.build"
+
+[project]
+name = "substrate-alignment"
+version = "0.2.0.dev0"
+description = "Reference Python implementation of the substrate-alignment open standard for multi-entity agent systems."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [
+  { name = "System9", email = "open-source@system9.ai" },
+]
+maintainers = [
+  { name = "System9", email = "open-source@system9.ai" },
+]
+keywords = [
+  "ai-safety",
+  "alignment",
+  "multi-agent",
+  "audit",
+  "conformance",
+  "substrate-alignment",
+  "open-standard",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Typing :: Typed",
+]
+dependencies = []
+
+[project.optional-dependencies]
+# Used at runtime only by ``substrate.conformance`` to consume YAML probe
+# files. Kept as an optional extra so callers who do not exercise the
+# conformance harness need not install it.
+yaml = ["pyyaml>=6.0"]
+dev = [
+  "pytest>=8.1",
+  "pyright>=1.1.350",
+  "pylint>=3.2",
+  "pyyaml>=6.0",
+]
+# Build the documentation site (``mkdocs build`` / ``mkdocs serve`` from the
+# repository root, where ``mkdocs.yml`` lives). Not needed to use the package.
+docs = [
+  "mkdocs-material>=9.5",
+  "mkdocs-same-dir>=0.1.3",
+  "mkdocstrings[python]>=0.24",
+]
+
+[project.urls]
+Homepage      = "https://github.com/System9ai/substrate-alignment"
+Repository    = "https://github.com/System9ai/substrate-alignment"
+Documentation = "https://System9ai.github.io/substrate-alignment/"
+Issues        = "https://github.com/System9ai/substrate-alignment/issues"
+Changelog     = "https://github.com/System9ai/substrate-alignment/blob/main/CHANGELOG.md"
+
+[project.scripts]
+# Console-script entry point for the conformance harness, so consumers
+# can run probes with ``substrate-conformance`` instead of
+# ``python -m substrate.conformance``.
+substrate-conformance = "substrate.conformance.probe_runner:main"
+
+# -- build configuration ------------------------------------------------------
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/substrate"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "src/substrate/",
+  "tests/",
+  "examples/",
+  "README.md",
+  "LICENSE",
+  "pyproject.toml",
+]
+
+# -- pytest -------------------------------------------------------------------
+
+[tool.pytest.ini_options]
+minversion = "8.1"
+testpaths = ["tests"]
+addopts = "-q --tb=short --strict-markers --strict-config"
+xfail_strict = true
+
+# -- pyright ------------------------------------------------------------------
+
+[tool.pyright]
+include = ["src/substrate", "tests"]
+pythonVersion = "3.11"
+typeCheckingMode = "strict"
+reportMissingTypeStubs = false
+reportImplicitOverride = "error"
+reportUnnecessaryTypeIgnoreComment = "warning"
+
+# Tests use third-party helpers (notably ``pytest.approx``) and intentionally
+# exercise edge cases with loose typing (negative paths, mock doubles). Relax
+# the strict-only diagnostics inside the tests tree while keeping the
+# production surface (``src/substrate``) fully strict.
+[[tool.pyright.executionEnvironments]]
+root = "tests"
+reportUnknownMemberType = "none"
+reportUnknownArgumentType = "none"
+reportUnknownVariableType = "none"
+reportUnknownLambdaType = "none"
+reportUnknownParameterType = "none"
+reportOptionalOperand = "none"
+reportCallIssue = "none"
+reportMissingTypeArgument = "none"
+reportArgumentType = "none"
+reportPossiblyUnboundVariable = "none"
+reportPrivateUsage = "none"
+reportReturnType = "none"
+reportAttributeAccessIssue = "none"
+reportGeneralTypeIssues = "none"
+reportRedeclaration = "none"
+reportInvalidTypeForm = "none"
+reportOperatorIssue = "none"
+reportIndexIssue = "none"
+reportAssignmentType = "none"
+reportIncompatibleVariableOverride = "none"
+reportIncompatibleMethodOverride = "none"
+reportInconsistentConstructor = "none"
+reportInconsistentOverload = "none"
+reportFunctionMemberAccess = "none"
+
+# -- pylint -------------------------------------------------------------------
+
+[tool.pylint.main]
+py-version = "3.11"
+jobs = 0
+load-plugins = []
+ignore-paths = ["^build/.*$", "^dist/.*$"]
+recursive = true
+
+[tool.pylint."messages control"]
+# These conflict with module-level docstrings / type-annotated public APIs that
+# Pyright already enforces. Keep the false-positive surface narrow rather than
+# wide; reintroduce a check the moment it earns its keep.
+disable = [
+  "missing-module-docstring",
+  "missing-class-docstring",
+  "missing-function-docstring",
+  # Common pytest patterns:
+  "attribute-defined-outside-init",          # ``setup_method`` sets self.* attrs
+  "use-implicit-booleaness-not-comparison",  # explicit ``== ()`` is clearer in tests
+  "import-outside-toplevel",                 # ``test_module_exports`` imports inside the function on purpose
+  # Package re-export idiom: ``cadence/__init__.py`` re-exports
+  # ``cadence/cadence_tracker.py`` and lists the same __all__. Intentional.
+  "duplicate-code",
+  # Legitimate single-method classes (Protocol implementations, narrow value
+  # adapters, single-test test classes) trip too-few-public-methods.
+  "too-few-public-methods",
+  # ``...`` is the canonical body for Protocol methods and abstract stubs;
+  # pylint flagging it as "unnecessary ellipsis" is wrong on this idiom.
+  "unnecessary-ellipsis",
+  # Cosmetic; trailing newlines at EOF are convention-dependent.
+  "trailing-newlines",
+]
+
+[tool.pylint.format]
+max-line-length = 120
+
+[tool.pylint.design]
+# Many substrate primitives are dataclasses representing persisted records or
+# protocol surfaces; the default limits are tuned for behavioural classes and
+# are too tight for value-object shapes.
+max-args = 10
+max-attributes = 25
+max-public-methods = 30
+max-locals = 20
+max-branches = 15

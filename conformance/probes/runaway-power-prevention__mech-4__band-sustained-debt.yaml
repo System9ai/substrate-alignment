@@ -1,0 +1,22 @@
+spec: runaway-power-prevention
+spec_version: ">=0.2"
+scenario: mech-4__band-sustained-debt
+required: true
+metadata:
+  mechanism: 4
+  rationale: >
+    Layered-model temporal contract. Sustained operation above the
+    uniform 2/3 debt line (≈ 0.667) MUST accrue compensation debt , 
+    a classification or alarm alone is non-conforming; the
+    implementation must expose accrued debt units so a compensation
+    path (peer pickup / recovery / capacity grant / escalation) can
+    repay them. The φ-conjugate (1/φ ≈ 0.618) is the PEAKING/WARNING
+    boundary, NOT the debt line.
+
+input:
+  mechanism: sustained-load
+  utilization_sequence: [0.70, 0.70, 0.70, 0.70]
+
+expected:
+  trend: debt_accruing
+  debt_accrued: true

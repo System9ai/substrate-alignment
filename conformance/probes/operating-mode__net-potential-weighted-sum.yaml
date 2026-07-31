@@ -1,0 +1,21 @@
+spec: operating-mode
+spec_version: ">=0.1"
+scenario: net-potential-weighted-sum
+required: true
+metadata:
+  rationale: >
+    compute_net_potential MUST apply the weighted sum
+    `w_trust*trust + w_expertise*expertise + w_capability*capability + w_health*health`
+    under the default weights (0.35, 0.30, 0.20, 0.15).
+
+input:
+  fn: compute_net_potential
+  vector:
+    trust: 0.8
+    expertise: 0.6
+    capability: 0.4
+    health: 0.2
+
+expected:
+  # 0.35*0.8 + 0.30*0.6 + 0.20*0.4 + 0.15*0.2 = 0.28 + 0.18 + 0.08 + 0.03 = 0.57
+  net_potential: 0.57

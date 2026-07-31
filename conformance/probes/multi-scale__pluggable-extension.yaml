@@ -1,0 +1,28 @@
+spec: multi-scale
+spec_version: ">=0.3"
+scenario: pluggable-extension
+required: true
+metadata:
+  rationale: >
+    Operators MUST be able to register a deployment-specific scope
+    (here: household → cell) and have the parent chain resolve
+    correctly per spec § 2.3 / § 3.
+
+input:
+  fn: register_and_walk
+  scope:
+    name: household
+    display_name: Household
+    parent_name: cell
+    aggregating: false
+
+expected:
+  parent_chain_of_new_scope:
+    - cell
+    - node
+    - org
+  registry_contains:
+    - cell
+    - node
+    - org
+    - household

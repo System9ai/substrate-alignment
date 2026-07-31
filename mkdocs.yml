@@ -1,0 +1,121 @@
+site_name: substrate-alignment
+site_url: https://System9ai.github.io/substrate-alignment/
+site_description: >-
+  Open standard, reference Python implementation, and machine-checkable
+  conformance suite for substrate-alignment primitives in multi-entity agent
+  systems.
+repo_url: https://github.com/System9ai/substrate-alignment
+repo_name: System9ai/substrate-alignment
+edit_uri: edit/main/
+
+# The repository root is the docs source (via the same-dir plugin), so the
+# cross-links between README, spec/, conformance/, and docs/ resolve identically
+# on GitHub and in the built site. Non-documentation trees are excluded below.
+docs_dir: .
+site_dir: site
+
+exclude_docs: |
+  .venv/
+  site/
+  python/src/
+  python/tests/
+  python/build/
+  python/*.egg-info/
+  scripts/
+  .github/
+  CODE_OF_CONDUCT.md
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.instant
+    - navigation.tracking
+    - content.code.copy
+    - toc.follow
+    - search.suggest
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+plugins:
+  - same-dir
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [python/src]
+          options:
+            show_root_heading: true
+            show_source: false
+            docstring_style: google
+            members_order: source
+            separate_signature: true
+            filters: ["!^_"]
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - tables
+
+nav:
+  - Home: docs/index.md
+  - Get started:
+      - Overview: README.md
+      - Core vs extended: docs/core-vs-extended.md
+      - Tutorial: docs/tutorial.md
+      - FAQ: docs/faq.md
+      - Glossary: docs/glossary.md
+      - Comparison: docs/comparison.md
+  - Concepts:
+      - Overview: docs/concepts/README.md
+      - Operating mode: docs/concepts/operating-mode.md
+      - NPG gate: docs/concepts/npg-gate.md
+      - Resistance band: docs/concepts/resistance-band.md
+      - Drift signals: docs/concepts/drift-signals.md
+      - Halt and escalate: docs/concepts/halt-and-escalate.md
+      - Four-options matrix: docs/concepts/four-options-matrix.md
+      - Pair coupling: docs/concepts/pair-coupling.md
+      - Audit chain: docs/concepts/audit-chain.md
+      - Alignment refresher: docs/concepts/alignment-refresher.md
+      - Governed ascent: docs/concepts/governed-ascent.md
+      - Runaway-power prevention: docs/concepts/runaway-power-prevention.md
+  - Specifications:
+      - Overview: spec/README.md
+      - Conformance criteria: spec/conformance-criteria.md
+      - Operating mode: spec/operating-mode.md
+      - NPG gate protocol: spec/npg-gate-protocol.md
+      - Drift signals: spec/drift-signals.md
+      - Runaway-power prevention: spec/runaway-power-prevention.md
+      - Four-options matrix: spec/four-options-matrix.md
+      - Reflex-restraint: spec/reflex-restraint.md
+      - Evidence grade: spec/evidence-grade.md
+      - Multi-scale: spec/multi-scale.md
+  - Adoption:
+      - Overview: docs/adoption/README.md
+      - FastAPI permission gate: docs/adoption/fastapi-permission-gate.md
+      - Django permission gate: docs/adoption/django-permission-gate.md
+      - Redis rate limiter: docs/adoption/redis-rate-limiter.md
+      - Celery task gate: docs/adoption/celery-task-gate.md
+      - Temporal workflow halt: docs/adoption/temporal-workflow-halt.md
+      - SQLAlchemy metadata store: docs/adoption/sqlalchemy-metadata-store.md
+      - Postgres audit chain: docs/adoption/audit-chain-postgres.md
+  - Conformance: conformance/README.md
+  - API reference: docs/reference.md
+  - Preprint: docs/preprint/preprint.md
+  - Case study: docs/case-studies/system9.md
+  - Changelog: CHANGELOG.md

@@ -1,0 +1,39 @@
+name: Feature request
+description: Propose a new primitive, classifier, or specification clarification.
+labels: [enhancement, needs-triage]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What problem in your agent system motivates this?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed primitive or change
+      description: |
+        Concrete description. Pseudo-code or a sketch of the public API is
+        welcome.
+    validations:
+      required: true
+
+  - type: textarea
+    id: spec-impact
+    attributes:
+      label: Specification impact
+      description: |
+        Does this require a new `spec/...md` document, or extending an existing
+        one? Does it change observable behavior of an existing primitive?
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What did you try first? Why didn't it work?
+    validations:
+      required: false

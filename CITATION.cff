@@ -1,0 +1,31 @@
+cff-version: 1.2.0
+title: >-
+  substrate-alignment: an open standard for verifiable alignment in
+  multi-entity agent systems
+message: >-
+  If you use this software or the standard, please cite it using the
+  metadata below.
+type: software
+authors:
+  - name: System9
+    website: "https://system9.ai"
+repository-code: "https://github.com/System9ai/substrate-alignment"
+url: "https://github.com/System9ai/substrate-alignment"
+abstract: >-
+  A language-neutral standard, a reference Python implementation, and a
+  machine-checkable conformance suite for behavioural alignment primitives
+  in systems where multiple entities (humans, services, and AI agents)
+  cooperate and adversarially interact. The primitives (a net-potential-gain
+  gate, an operating-mode classifier, drift signals, a halt-and-escalate
+  protocol, a tamper-evident audit chain, and more) let a system make
+  verifiable alignment claims that a third party can re-run and confirm,
+  rather than trusting closed-source assertions.
+keywords:
+  - ai-safety
+  - ai-alignment
+  - multi-agent-systems
+  - conformance
+  - open-standard
+  - audit
+license: Apache-2.0
+version: 0.2.0.dev0
